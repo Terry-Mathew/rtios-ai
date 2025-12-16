@@ -18,7 +18,7 @@
 import type { JobInfo, JobOutputs } from '../types';
 import type { AppState, CoverLetterState, LinkedInState, InterviewPrepState } from '../../workspace/types';
 import type { ResearchResult, AnalysisResult } from '../../intelligence/types';
-import { ToneType } from '../../workspace/types';
+import { ToneType, AppStatus } from '../../workspace/types';
 
 // Default empty workspace state for hydration fallbacks
 const DEFAULT_COVER_LETTER: CoverLetterState = {
@@ -79,7 +79,7 @@ export function hydrateFromJob(
     coverLetter: job.outputs?.coverLetter || DEFAULT_COVER_LETTER,
     linkedIn: job.outputs?.linkedIn || DEFAULT_LINKEDIN(currentLinkedInInput),
     interviewPrep: job.outputs?.interviewPrep || DEFAULT_INTERVIEW_PREP,
-    status: job.outputs?.coverLetter?.content ? ('completed' as const) : ('idle' as const)
+    status: job.outputs?.coverLetter?.content ? AppStatus.COMPLETED : AppStatus.IDLE
   };
 }
 
@@ -94,7 +94,7 @@ export function clearWorkspace(currentLinkedInInput?: LinkedInState['input']): P
     coverLetter: DEFAULT_COVER_LETTER,
     linkedIn: DEFAULT_LINKEDIN(currentLinkedInInput),
     interviewPrep: DEFAULT_INTERVIEW_PREP,
-    status: 'idle' as const
+    status: AppStatus.IDLE
   };
 }
 

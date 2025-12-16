@@ -15,8 +15,9 @@
  * - GeneratedIntelligence: domains/intelligence/ (AI generation capabilities)
  * - Workspace: domains/workspace/types.ts (derived UI state types)
  */
+// Add at top of App.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import InputForm from './components/InputForm';
 import CoverLetterDisplay from './components/CoverLetterDisplay';
 import ResumeAnalysisDisplay from './components/ResumeAnalysisDisplay';
@@ -42,10 +43,20 @@ import { useJobApplications } from './domains/jobs/hooks/useJobApplications';
 // Domain Controllers
 import { createSnapshot, hydrateFromJob, clearWorkspace } from './domains/jobs/controllers/JobSnapshotController';
 
+// Zustand Stores
+import { useAppStore } from './src/stores/appStore';
+import { useWorkspaceStore } from './src/stores/workspaceStore';
+
 const App: React.FC = () => {
-  // --- Navigation State ---
-  const [currentView, setCurrentView] = useState<View>('landing');
-  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  // --- Navigation State from appStore ---
+  const currentView = useAppStore((s) => s.currentView);
+  const setCurrentView = useAppStore((s) => s.setCurrentView);
+  const isAuthModalOpen = useAppStore((s) => s.isAuthModalOpen);
+  const setAuthModalOpen = useAppStore((s) => s.setIsAuthModalOpen);
+  const activeModule = useAppStore((s) => s.activeModule);
+  const setActiveModule = useAppStore((s) => s.setActiveModule);
+  const activeSidebarTab = useAppStore((s) => s.activeSidebarTab);
+  const setActiveSidebarTab = useAppStore((s) => s.setActiveSidebarTab);
   
   // --- Domain Hooks (with built-in persistence) ---
   const {
@@ -74,46 +85,29 @@ const App: React.FC = () => {
   // Derived Active Data
   const currentJob = jobs.find(j => j.id === activeJobId) || { title: '', company: '', description: '', companyUrl: '' };
 
-  // --- Workspace State (transient, execution-only) ---
-  const [appState, setAppState] = useState<AppState>({
-    status: AppStatus.IDLE,
-    error: undefined,
-    library: { resumes: [], jobs: [] },
-    activeJobId: null,
-    resumeText: '',
-    research: null,
-    analysis: null,
-    coverLetter: {
-      content: '',
-      isGenerating: false,
-      tone: ToneType.PROFESSIONAL
-    },
-    linkedIn: {
-      input: {
-        connectionStatus: 'new',
-        recruiterName: '',
-        recruiterTitle: '',
-        connectionContext: '',
-        messageIntent: '',
-        recentActivity: '',
-        mutualConnection: '',
-        customAddition: '',
-        tone: 'Warm Professional'
-      },
-      generatedMessage: '',
-      isGenerating: false
-    },
-    interviewPrep: {
-      questions: [],
-      isGenerating: false
-    }
-  });
+  // --- Workspace State from workspaceStore ---
+  const appState = useWorkspaceStore((s) => ({
+    status: s.status,
+    error: s.error,
+    resumeText: s.resumeText,
+    research: s.research,
+    analysis: s.analysis,
+    coverLetter: s.coverLetter,
+    linkedIn: s.linkedIn,
+    interviewPrep: s.interviewPrep
+  }));
 
-  // Main Module State (Center Panel)
-  const [activeModule, setActiveModule] = useState<'coverLetter' | 'linkedin' | 'interview'>('coverLetter');
-  
-  // Sidebar State (Right Panel)
-  const [activeSidebarTab, setActiveSidebarTab] = useState<'input' | 'analysis' | 'research'>('input');
+  const { 
+    setStatus, 
+    setError, 
+    setResumeText,
+    setResearch, 
+    setAnalysis, 
+    updateCoverLetter, 
+    updateLinkedIn, 
+    updateInterviewPrep, 
+    clearWorkspace: clearWorkspaceStore 
+  } = useWorkspaceStore();
 
 
   // --- Helper: Sync Current AppState to Active Job History ---
@@ -152,7 +146,7 @@ const App: React.FC = () => {
   // --- Library Handlers ---
 
   const handleAddResume = async (file: File) => {
-      setAppState(prev => ({ ...prev, status: AppStatus.PARSING_RESUME }));
+      setStatus(AppStatus.PARSING_RESUME);
       try {
           const base64 = await fileToBase64(file);
           const text = await GeminiService.extractResumeText(base64);
@@ -167,7 +161,8 @@ const App: React.FC = () => {
 
           // Use hook method (handles single resume enforcement + persistence)
           addResumeToContext(newResume);
-          setAppState(prev => ({ ...prev, status: AppStatus.IDLE, resumeText: text }));
+          setStatus(AppStatus.IDLE);
+          setResumeText(text);
       } catch (e) {
           handleError("Failed to upload and parse resume.");
       }
@@ -182,13 +177,9 @@ const App: React.FC = () => {
       // Use hook method (handles ID generation + persistence)
       addJobToApplications(job);
       
-      // Reset AppState for new job (using controller)
-      const clearedState = clearWorkspace(appState.linkedIn.input);
-      setAppState(prev => ({
-        ...prev,
-        ...clearedState,
-        status: AppStatus.IDLE
-      }));
+      // Reset workspace for new job (using store action)
+      clearWorkspaceStore(appState.linkedIn.input);
+      setStatus(AppStatus.IDLE);
   };
 
   const handleSelectStrategy = (jobId: string) => {
@@ -201,11 +192,16 @@ const App: React.FC = () => {
       // 2. Hydrate workspace from the NEW job (using controller)
       const targetJob = jobs.find(j => j.id === jobId);
       const hydratedState = hydrateFromJob(targetJob, appState.linkedIn.input);
-      setAppState(prev => ({
-          ...prev,
-          ...hydratedState,
-          status: AppStatus.IDLE
-      }));
+      
+      // Apply hydrated state to workspace store
+      if (hydratedState.status) setStatus(hydratedState.status);
+      if (hydratedState.resumeText !== undefined) setResumeText(hydratedState.resumeText);
+      if (hydratedState.research !== undefined) setResearch(hydratedState.research);
+      if (hydratedState.analysis !== undefined) setAnalysis(hydratedState.analysis);
+      if (hydratedState.coverLetter) updateCoverLetter(hydratedState.coverLetter);
+      if (hydratedState.linkedIn) updateLinkedIn(hydratedState.linkedIn);
+      if (hydratedState.interviewPrep) updateInterviewPrep(hydratedState.interviewPrep);
+      setStatus(AppStatus.IDLE);
 
       // Ensure we are using the current resume (legacy support for linkedResumeId)
       if (resumes.length > 0) {
@@ -222,13 +218,9 @@ const App: React.FC = () => {
       if (activeJobId) snapshotCurrentStateToJob(activeJobId);
       setActiveJobId(null);
       
-      // Clear workspace (using controller)
-      const clearedState = clearWorkspace(appState.linkedIn.input);
-      setAppState(prev => ({
-        ...prev,
-        ...clearedState,
-        status: AppStatus.IDLE
-      }));
+      // Clear workspace (using store action)
+      clearWorkspaceStore(appState.linkedIn.input);
+      setStatus(AppStatus.IDLE);
       
       setCurrentView('app');
   };
@@ -240,25 +232,24 @@ const App: React.FC = () => {
       const wasActive = activeJobId === id;
       handleDeleteJob(id);
       if (wasActive) {
-          // Clear workspace (using controller)
-          const clearedState = clearWorkspace(appState.linkedIn.input);
-          setAppState(prev => ({
-            ...prev,
-            ...clearedState
-          }));
+          // Clear workspace (using store action)
+          clearWorkspaceStore(appState.linkedIn.input);
       }
   };
 
   // --- Handlers ---
   
   const handleError = (message: string) => {
-    setAppState(prev => ({ ...prev, status: AppStatus.ERROR, error: message }));
+    setStatus(AppStatus.ERROR);
+    setError(message);
   };
 
   const handleGenerate = async () => {
     if (!currentResume || !currentJob.title) return;
 
-    setAppState(prev => ({ ...prev, resumeText: currentResume.textParams, status: AppStatus.RESEARCHING, error: undefined }));
+    setResumeText(currentResume.textParams);
+    setStatus(AppStatus.RESEARCHING);
+    setError(undefined);
 
     try {
       // 1. Parallel: Research & Analysis
@@ -267,12 +258,9 @@ const App: React.FC = () => {
       
       const [researchResult, analysisResult] = await Promise.all([researchPromise, analysisPromise]);
 
-      setAppState(prev => ({ 
-        ...prev, 
-        research: researchResult, 
-        analysis: analysisResult,
-        status: AppStatus.GENERATING 
-      }));
+      setResearch(researchResult);
+      setAnalysis(analysisResult);
+      setStatus(AppStatus.GENERATING);
 
       // 2. Generate Cover Letter (Default Action)
       const coverLetterText = await GeminiService.generateCoverLetter(
@@ -289,11 +277,8 @@ const App: React.FC = () => {
           isGenerating: false
       };
 
-      setAppState(prev => ({
-        ...prev,
-        status: AppStatus.COMPLETED,
-        coverLetter: newCoverLetterState
-      }));
+      setStatus(AppStatus.COMPLETED);
+      updateCoverLetter(newCoverLetterState);
 
       // Save Results to Job History Immediately
       if (activeJobId) {
@@ -319,10 +304,7 @@ const App: React.FC = () => {
   const handleRegenerateCoverLetter = async (tone: ToneType) => {
     if (!currentResume || !appState.research) return;
 
-    setAppState(prev => ({
-      ...prev,
-      coverLetter: { ...prev.coverLetter, isGenerating: true, tone }
-    }));
+    updateCoverLetter({ isGenerating: true, tone });
 
     try {
       // Use orchestrator for cover letter regeneration
@@ -336,10 +318,7 @@ const App: React.FC = () => {
 
       const updatedCoverLetter = { content: newContent, isGenerating: false, tone };
 
-      setAppState(prev => ({
-        ...prev,
-        coverLetter: updatedCoverLetter
-      }));
+      updateCoverLetter(updatedCoverLetter);
 
       // Update History
       if (activeJobId) {
@@ -351,28 +330,19 @@ const App: React.FC = () => {
 
     } catch (e) {
       console.error(e);
-      setAppState(prev => ({
-        ...prev,
-        coverLetter: { ...prev.coverLetter, isGenerating: false }
-      }));
+      updateCoverLetter({ isGenerating: false });
     }
   };
 
   const updateCoverLetterContent = useCallback((text: string) => {
-    setAppState(prev => ({
-        ...prev,
-        coverLetter: { ...prev.coverLetter, content: text }
-    }));
-  }, []);
+    updateCoverLetter({ content: text });
+  }, [updateCoverLetter]);
 
   // LinkedIn Handler
   const handleGenerateLinkedIn = async () => {
     if (!currentResume) return;
 
-    setAppState(prev => ({
-      ...prev,
-      linkedIn: { ...prev.linkedIn, isGenerating: true }
-    }));
+    updateLinkedIn({ isGenerating: true });
 
     try {
       // Use orchestrator for LinkedIn message generation
@@ -385,10 +355,7 @@ const App: React.FC = () => {
       
       const updatedLinkedIn = { ...appState.linkedIn, generatedMessage: message, isGenerating: false };
 
-      setAppState(prev => ({
-        ...prev,
-        linkedIn: updatedLinkedIn
-      }));
+      updateLinkedIn(updatedLinkedIn);
 
       // Update History
       if (activeJobId) {
@@ -400,34 +367,27 @@ const App: React.FC = () => {
 
     } catch (e) {
       console.error(e);
-      setAppState(prev => ({
-        ...prev,
-        linkedIn: { ...prev.linkedIn, isGenerating: false }
-      }));
+      updateLinkedIn({ isGenerating: false });
     }
   };
 
   const setLinkedInState = useCallback((updater: React.SetStateAction<LinkedInState>) => {
-      setAppState((currentAppState) => {
-          let newLinkedInState: LinkedInState;
-          if (typeof updater === 'function') {
-              const updaterFn = updater as (prevState: LinkedInState) => LinkedInState;
-              newLinkedInState = updaterFn(currentAppState.linkedIn);
-          } else {
-              newLinkedInState = updater;
-          }
-          return { ...currentAppState, linkedIn: newLinkedInState };
-      });
-  }, []);
+      const currentLinkedIn = useWorkspaceStore.getState().linkedIn;
+      let newLinkedInState: LinkedInState;
+      if (typeof updater === 'function') {
+          const updaterFn = updater as (prevState: LinkedInState) => LinkedInState;
+          newLinkedInState = updaterFn(currentLinkedIn);
+      } else {
+          newLinkedInState = updater;
+      }
+      updateLinkedIn(newLinkedInState);
+  }, [updateLinkedIn]);
 
   // Interview Prep Handler
   const handleGenerateInterviewQuestions = async () => {
     if (!currentResume) return;
 
-    setAppState(prev => ({
-      ...prev,
-      interviewPrep: { ...prev.interviewPrep, isGenerating: true }
-    }));
+    updateInterviewPrep({ isGenerating: true });
 
     try {
       const existingQuestions = appState.interviewPrep.questions.map(q => q.question);
@@ -443,10 +403,7 @@ const App: React.FC = () => {
           isGenerating: false 
       };
 
-      setAppState(prev => ({
-        ...prev,
-        interviewPrep: updatedInterviewPrep
-      }));
+      updateInterviewPrep(updatedInterviewPrep);
 
       // Update History
       if (activeJobId) {
@@ -458,10 +415,7 @@ const App: React.FC = () => {
 
     } catch (e) {
       console.error(e);
-      setAppState(prev => ({
-        ...prev,
-        interviewPrep: { ...prev.interviewPrep, isGenerating: false }
-      }));
+      updateInterviewPrep({ isGenerating: false });
     }
   };
 
