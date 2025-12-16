@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Hexagon, LayoutGrid, FileText, MessageSquare, Brain } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import type { View } from '../../../types';
@@ -12,9 +13,10 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     onLogoClick,
     onSnapshotBeforeDashboard
 }) => {
+    const navigate = useNavigate();
+
     // Get navigation state from store
     const currentView = useAppStore((s) => s.currentView);
-    const setCurrentView = useAppStore((s) => s.setCurrentView);
     const activeModule = useAppStore((s) => s.activeModule);
     const setActiveModule = useAppStore((s) => s.setActiveModule);
 
@@ -23,15 +25,13 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         if (onSnapshotBeforeDashboard) {
             onSnapshotBeforeDashboard();
         }
-        setCurrentView('dashboard');
+        navigate('/dashboard');
     };
 
     // Handler for module navigation
     const handleModuleClick = (module: 'coverLetter' | 'linkedin' | 'interview') => {
-        if (currentView !== 'app') {
-            setCurrentView('app');
-        }
         setActiveModule(module);
+        navigate('/app');
     };
 
     return (
@@ -49,13 +49,13 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 <button
                     onClick={handleDashboardClick}
                     className={`group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${currentView === 'dashboard'
-                            ? 'bg-white/5 text-accent'
-                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                        ? 'bg-white/5 text-accent'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                         }`}
                 >
                     <LayoutGrid className={`w-5 h-5 ${currentView === 'dashboard'
-                            ? 'text-accent'
-                            : 'text-text-secondary group-hover:text-text-primary'
+                        ? 'text-accent'
+                        : 'text-text-secondary group-hover:text-text-primary'
                         }`} />
                     <span className="text-[9px] font-interstate uppercase font-bold text-center">Dashboard</span>
                 </button>
@@ -67,13 +67,13 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 <button
                     onClick={() => handleModuleClick('coverLetter')}
                     className={`group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${activeModule === 'coverLetter' && currentView === 'app'
-                            ? 'bg-white/5 text-accent'
-                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                        ? 'bg-white/5 text-accent'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                         }`}
                 >
                     <FileText className={`w-5 h-5 ${activeModule === 'coverLetter' && currentView === 'app'
-                            ? 'text-accent'
-                            : 'text-text-secondary group-hover:text-text-primary'
+                        ? 'text-accent'
+                        : 'text-text-secondary group-hover:text-text-primary'
                         }`} />
                     <span className="text-[9px] font-interstate uppercase font-bold">Cover</span>
                 </button>
@@ -82,13 +82,13 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 <button
                     onClick={() => handleModuleClick('linkedin')}
                     className={`group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${activeModule === 'linkedin' && currentView === 'app'
-                            ? 'bg-white/5 text-accent'
-                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                        ? 'bg-white/5 text-accent'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                         }`}
                 >
                     <MessageSquare className={`w-5 h-5 ${activeModule === 'linkedin' && currentView === 'app'
-                            ? 'text-accent'
-                            : 'text-text-secondary group-hover:text-text-primary'
+                        ? 'text-accent'
+                        : 'text-text-secondary group-hover:text-text-primary'
                         }`} />
                     <span className="text-[9px] font-interstate uppercase font-bold">Social</span>
                 </button>
@@ -97,13 +97,13 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 <button
                     onClick={() => handleModuleClick('interview')}
                     className={`group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${activeModule === 'interview' && currentView === 'app'
-                            ? 'bg-white/5 text-accent'
-                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+                        ? 'bg-white/5 text-accent'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                         }`}
                 >
                     <Brain className={`w-5 h-5 ${activeModule === 'interview' && currentView === 'app'
-                            ? 'text-accent'
-                            : 'text-text-secondary group-hover:text-text-primary'
+                        ? 'text-accent'
+                        : 'text-text-secondary group-hover:text-text-primary'
                         }`} />
                     <span className="text-[9px] font-interstate uppercase font-bold">Prep</span>
                 </button>

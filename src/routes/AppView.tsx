@@ -5,7 +5,7 @@
  * Extracted from App.tsx to support React Router v6 integration.
  */
 
-import React, { useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useAppStore } from '../stores/appStore';
@@ -16,12 +16,10 @@ import { CoverLetterFeature } from '../features/CoverLetterFeature';
 import { LinkedInFeature } from '../features/LinkedInFeature';
 import { InterviewPrepFeature } from '../features/InterviewPrepFeature';
 import ContextSwitcher from '../../components/ContextSwitcher';
-import { useCareerContext } from '../../domains/career/hooks/useCareerContext';
-import { useJobApplications } from '../../domains/jobs/hooks/useJobApplications';
-import { createSnapshot } from '../../domains/jobs/controllers/JobSnapshotController';
-import { AppStatus, SavedResume, JobInfo, ToneType } from '../../types';
+import { useResumeManagement } from '../hooks/useResumeManagement';
+import { useJobManagement } from '../hooks/useJobManagement';
+import { AppStatus, JobInfo, ToneType } from '../../types';
 import { Layout } from 'lucide-react';
-import { fileToBase64 } from '../../utils/fileUtils';
 import * as GeminiService from '../../domains/intelligence/services/gemini';
 
 const AppView: React.FC = () => {
@@ -32,38 +30,36 @@ const AppView: React.FC = () => {
     const setActiveModule = useAppStore((s) => s.setActiveModule);
     const activeSidebarTab = useAppStore((s) => s.activeSidebarTab);
     const setActiveSidebarTab = useAppStore((s) => s.setActiveSidebarTab);
+    const setCurrentView = useAppStore((s) => s.setCurrentView);
+
+    // Sync appStore with current route
+    useEffect(() => {
+        setCurrentView('app');
+    }, [setCurrentView]);
 
     // --- Domain Hooks (with built-in persistence) ---
     const {
         resumes,
         activeResumeId,
-        userProfile,
         currentResume,
-        addResume: addResumeToContext,
+        userProfile,
+        addResume: handleAddResume,
         selectResume: handleSelectResume,
         deleteResume: handleDeleteResume,
-        updateProfile: setUserProfile,
-        setResumes,
-        setActiveResumeId
-    } = useCareerContext();
+        updateProfile: setUserProfile
+    } = useResumeManagement();
 
     const {
         jobs,
         activeJobId,
-        addJob: addJobToApplications,
-        deleteJob: handleDeleteJob,
-        updateJobOutputs,
-        setJobs,
-        setActiveJobId
-    } = useJobApplications();
-
-    // Derived Active Data
-    const currentJob = jobs.find(j => j.id === activeJobId) || {
-        title: '',
-        company: '',
-        description: '',
-        companyUrl: ''
-    };
+        currentJob,
+        addJob: handleAddJob,
+        selectJob: handleSelectStrategy,
+        deleteJobWithWorkspaceClear: handleDeleteJobWithWorkspaceClear,
+        snapshotCurrentJob,
+        addNewJobStrategy,
+        updateJobOutputs
+    } = useJobManagement();
 
     // --- Workspace State from workspaceStore ---
     const appState = useWorkspaceStore(useShallow((s) => ({
@@ -89,99 +85,11 @@ const AppView: React.FC = () => {
         clearWorkspace: clearWorkspaceStore
     } = useWorkspaceStore();
 
-    // --- Helper: Sync Current AppState to Active Job History ---
-    const snapshotCurrentStateToJob = useCallback((jobIdToUpdate: string | null) => {
-        if (!jobIdToUpdate) return;
-
-        // Use controller to create snapshot
-        const snapshot = createSnapshot(appState);
-        updateJobOutputs(jobIdToUpdate, snapshot);
-    }, [appState, updateJobOutputs]);
-
     // --- Library Handlers ---
-    const handleAddResume = async (file: File) => {
-        setStatus(AppStatus.PARSING_RESUME);
-        try {
-            const base64 = await fileToBase64(file);
-            const text = await GeminiService.extractResumeText(base64);
-
-            const newResume: SavedResume = {
-                id: crypto.randomUUID(),
-                fileName: file.name,
-                file: file,
-                textParams: text,
-                uploadDate: new Date()
-            };
-
-            // Use hook method (handles single resume enforcement + persistence)
-            addResumeToContext(newResume);
-            setStatus(AppStatus.IDLE);
-            setResumeText(text);
-        } catch (e) {
-            handleError("Failed to upload and parse resume.");
-        }
-    };
-
-    const handleAddJob = (job: JobInfo) => {
-        // If we are currently on another job, snapshot it first
-        if (activeJobId) snapshotCurrentStateToJob(activeJobId);
-
-        // Use hook method (handles ID generation + persistence)
-        addJobToApplications(job);
-
-        // Reset workspace for new job (using store action)
-        clearWorkspaceStore(appState.linkedIn.input);
-        setStatus(AppStatus.IDLE);
-    };
-
-    const handleSelectStrategy = (jobId: string) => {
-        // 1. Save current workspace state to the OLD job (using controller)
-        if (activeJobId) {
-            const snapshot = createSnapshot(appState);
-            updateJobOutputs(activeJobId, snapshot);
-        }
-
-        // 2. Hydrate workspace from the NEW job (using controller)
-        const targetJob = jobs.find(j => j.id === jobId);
-        const { hydrateFromJob } = require('../../domains/jobs/controllers/JobSnapshotController');
-        const hydratedState = hydrateFromJob(targetJob, appState.linkedIn.input);
-
-        // Apply hydrated state to workspace store
-        if (hydratedState.status) setStatus(hydratedState.status);
-        if (hydratedState.resumeText !== undefined) setResumeText(hydratedState.resumeText);
-        if (hydratedState.research !== undefined) setResearch(hydratedState.research);
-        if (hydratedState.analysis !== undefined) setAnalysis(hydratedState.analysis);
-        if (hydratedState.coverLetter) updateCoverLetter(hydratedState.coverLetter);
-        if (hydratedState.linkedIn) updateLinkedIn(hydratedState.linkedIn);
-        if (hydratedState.interviewPrep) updateInterviewPrep(hydratedState.interviewPrep);
-        setStatus(AppStatus.IDLE);
-
-        // Ensure we are using the current resume (legacy support for linkedResumeId)
-        if (resumes.length > 0) {
-            handleSelectResume(resumes[0].id);
-        }
-
-        setActiveJobId(jobId);
-    };
 
     const handleAddNewStrategy = () => {
         setActiveSidebarTab('input');
-        // Snapshot before clearing
-        if (activeJobId) snapshotCurrentStateToJob(activeJobId);
-        setActiveJobId(null);
-
-        // Clear workspace (using store action)
-        clearWorkspaceStore(appState.linkedIn.input);
-        setStatus(AppStatus.IDLE);
-    };
-
-    const handleDeleteJobWithWorkspaceClear = (id: string) => {
-        const wasActive = activeJobId === id;
-        handleDeleteJob(id);
-        if (wasActive) {
-            // Clear workspace (using store action)
-            clearWorkspaceStore(appState.linkedIn.input);
-        }
+        addNewJobStrategy();
     };
 
     const handleError = (message: string) => {
@@ -227,15 +135,11 @@ const AppView: React.FC = () => {
 
             // Update History
             if (activeJobId) {
-                setJobs(prev => prev.map(j => j.id === activeJobId ? {
-                    ...j,
-                    outputs: {
-                        ...j.outputs,
-                        research: researchResult,
-                        analysis: analysisResult,
-                        coverLetter: newCoverLetterState
-                    }
-                } : j));
+                updateJobOutputs(activeJobId, {
+                    research: researchResult,
+                    analysis: analysisResult,
+                    coverLetter: newCoverLetterState
+                });
             }
 
             // Switch Sidebar to Analysis on completion
@@ -251,9 +155,7 @@ const AppView: React.FC = () => {
             {/* 1. Left Navigation Sidebar (Vertical) */}
             <NavigationSidebar
                 onLogoClick={() => navigate('/')}
-                onSnapshotBeforeDashboard={() => {
-                    if (activeJobId) snapshotCurrentStateToJob(activeJobId);
-                }}
+                onSnapshotBeforeDashboard={snapshotCurrentJob}
             />
 
             {/* 2. Main Content Area (Flexible) */}
