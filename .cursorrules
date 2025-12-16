@@ -1,0 +1,182 @@
+# Rtios AI - Cursor/AI Coding Rules
+
+## Project Context
+
+This is a React + TypeScript job application assistant (Next.js-style architecture but using Vite).
+
+**Framework versions:**
+- React 19.2.1
+- TypeScript 5.8.2
+- Vite 6.2.0
+
+## Critical Architectural Constraint: App.tsx is a Composition Root
+
+`App.tsx` is the application composition root. It wires domains together and coordinates high-level navigation.
+
+**IT MUST NOT ACCUMULATE NEW DOMAIN LOGIC.**
+
+### What App.tsx May Do
+
+✅ **Allowed:**
+- Navigation and view selection
+- Wiring dependencies (passing callbacks, services, state to components)
+- Triggering high-level actions (snapshot when switching contexts)
+- Read-only state derivation (e.g., `const currentJob = jobs.find(...)`)
+- Event routing (forwarding events to domain handlers)
+
+### What App.tsx Must NOT Do
+
+❌ **Forbidden:**
+- Persistence logic details (localStorage calls, serialization)
+- Conditional business rules (feature gates, validation logic)
+- AI prompt construction
+- Feature-specific state machines
+- Domain calculations (scoring, keyword matching, transformations)
+- Acting as a compatibility layer for state shape changes
+
+### Current Violations (Temporary Only)
+
+App.tsx currently contains violations that are **tolerated temporarily**:
+- Persistence orchestration (loadFromStorage/saveToStorage effects)
+- AI orchestration (handleGenerate, handleRegenerate*, handleGenerate*)
+- Snapshot/hydration implementation (snapshotCurrentStateToJob)
+- "Single resume" enforcement
+
+**These exist, but NEW logic of these types must NOT be added.**
+
+## Domain Boundaries
+
+The application has four core domains:
+
+### 1. CareerContext (Global)
+**Owns:** Resumes, user profile links (portfolio, LinkedIn)
+**Invariant:** Single resume only
+**Where code goes:** `hooks/useCareerContext.ts`, `services/careerStorage.ts`
+
+### 2. JobApplications (Per-Job)
+**Owns:** Job list, active job selection, job-owned outputs/history
+**Invariant:** Outputs belong to jobs (stored in `JobInfo.outputs`)
+**Where code goes:** `hooks/useJobApplications.ts`, `controllers/JobApplicationController.ts`, `services/jobStorage.ts`
+
+### 3. GeneratedIntelligence (Pure Capabilities)
+**Owns:** AI generation functions (stateless)
+**Invariant:** Pure and stateless, no UI/storage dependencies
+**Where code goes:** `services/ai/`, no hooks
+
+### 4. Workspace (Execution-Only UI State)
+**Owns:** Transient UI state (active module/tab, loading status)
+**Invariant:** Must not own persistent state, must be derivable/hydrated
+**Where code goes:** `hooks/useWorkspace.ts`, `hooks/useWorkspaceHydration.ts`
+
+## Dependency Direction Rules
+
+**App.tsx** → may depend on all domains  
+**CareerContext** → must not depend on JobApplications or Workspace  
+**JobApplications** → may depend on CareerContext identifiers only  
+**GeneratedIntelligence** → must not depend on UI, Workspace, or storage  
+**Workspace** → may read from CareerContext and JobApplications, must not own persistent state
+
+## Where to Put New Code
+
+When adding new functionality, follow this mapping:
+
+| Type of Code | Location |
+|--------------|----------|
+| Resume management, profile links | `hooks/useCareerContext.ts` or `services/careerStorage.ts` |
+| Job CRUD, selection, snapshot/hydration | `hooks/useJobApplications.ts` or `controllers/JobApplicationController.ts` |
+| AI generation functions | `services/ai/gemini.ts` or `services/ai/prompts.ts` |
+| Transient UI state | `hooks/useWorkspace.ts` |
+| Pure utilities (no domain knowledge) | `utils/` |
+
+**If you need to add business logic and you're not sure where it goes:**
+1. First check if it belongs in an existing domain
+2. If not, create a new hook, service, or controller
+3. **NEVER add it directly to App.tsx**
+
+## State Shape Change Rule (CRITICAL)
+
+If a domain's state shape changes:
+
+✅ **DO:** Update all consumers in the same change  
+❌ **DON'T:** Adapt shapes locally in App.tsx  
+❌ **DON'T:** Create temporary adapters in App.tsx
+
+**Why:** This forces proper domain ownership and prevents App.tsx from becoming a compatibility layer.
+
+**Example - BAD:**
+```typescript
+// DON'T DO THIS in App.tsx
+const currentJob = jobs.find(j => j.id === activeJobId);
+const adaptedJob = { 
+  title: currentJob?.jobTitle || '', // Adapting old field name
+  company: currentJob?.companyName || '' 
+};
+```
+
+**Example - GOOD:**
+```typescript
+// Update JobInfo type in types.ts
+// Update ALL consumers (App.tsx, InputForm.tsx, etc.) in the SAME commit
+```
+
+## Temporary Violation Policy
+
+If you MUST add an ESLint suppression for a boundary violation:
+
+```typescript
+// eslint-disable-next-line no-restricted-imports -- TODO: Extract to [TargetDomain]
+import { violatingImport } from './somewhere';
+```
+
+**Include:**
+1. The specific ESLint rule being disabled
+2. A TODO comment
+3. The target domain where it should be extracted
+
+## Instructions for AI Assistants
+
+When working on this codebase:
+
+1. **Before adding logic to App.tsx:** Stop and ask "Is this composition/coordination, or domain behavior?"
+   - Composition/coordination → might be OK in App.tsx
+   - Domain behavior → extract to hook/service/controller
+
+2. **Before importing into App.tsx:** Check if you're importing:
+   - `utils/storageUtils.ts` → Consider extracting to domain storage adapter
+   - `services/geminiService.ts` → Consider extracting to domain controller
+   - Direct domain internals → Should likely be wrapped in a hook
+
+3. **When modifying state shapes:** Update types AND all consumers together. Never adapt in App.tsx.
+
+4. **When adding features:** Identify the owning domain first, then create code in that domain's folder structure.
+
+5. **Preserve existing behavior:** All changes must maintain snapshot semantics (job outputs) and avoid implicit side effects.
+
+## Invariants to Preserve
+
+1. **Single resume only** - The system enforces one resume at a time
+2. **Artifacts are global** - Generated outputs belong to jobs, not resumes
+3. **Job applications own outputs** - `JobInfo.outputs` is the source of truth
+4. **Workspace is execution-only** - No persistent state ownership
+
+## If You're Unsure
+
+- Leave a TODO comment explaining the concern
+- Ask the user for clarification
+- Prefer creating a new hook/service/controller over adding to App.tsx
+- Check `docs/architecture/composition-root.md` and `docs/architecture/domain-boundaries.md`
+
+## Code Style Notes
+
+- Use explicit types (TypeScript strict mode)
+- Prefer hooks for stateful logic
+- Prefer services for stateless capabilities
+- Use controllers for complex orchestration that doesn't fit in hooks
+- Keep components focused on presentation where possible
+
+## Testing Philosophy
+
+- Domain logic should be testable independently of App.tsx
+- If logic can't be tested without mounting App, it should be extracted
+- Snapshot/hydration semantics must be preserved in all changes
+
