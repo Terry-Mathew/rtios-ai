@@ -27,13 +27,13 @@ export interface UseJobApplicationsReturn {
   jobs: JobInfo[];
   activeJobId: string | null;
   currentJob: JobInfo | undefined;
-  
+
   // Actions
   addJob: (job: JobInfo) => string; // Returns new job ID
   selectJob: (id: string) => void;
   deleteJob: (id: string) => void;
   updateJobOutputs: (jobId: string, outputs: JobOutputs) => void;
-  
+
   // For backward compatibility during migration
   setJobs: React.Dispatch<React.SetStateAction<JobInfo[]>>;
   setActiveJobId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -69,16 +69,16 @@ export function useJobApplications(): UseJobApplicationsReturn {
    */
   const addJob = useCallback((job: JobInfo): string => {
     const newJobId = crypto.randomUUID();
-    const newJob: JobInfo = { 
-      ...job, 
-      id: newJobId, 
-      dateAdded: new Date(), 
-      outputs: {} 
+    const newJob: JobInfo = {
+      ...job,
+      id: newJobId,
+      dateAdded: new Date(),
+      outputs: {}
     };
-    
+
     setJobs(prev => [newJob, ...prev]);
     setActiveJobId(newJobId);
-    
+
     return newJobId;
   }, []);
 
@@ -104,8 +104,8 @@ export function useJobApplications(): UseJobApplicationsReturn {
    * Update a job's outputs (for snapshot functionality)
    */
   const updateJobOutputs = useCallback((jobId: string, outputs: JobOutputs) => {
-    setJobs(prevJobs => prevJobs.map(j => 
-      j.id === jobId ? { ...j, outputs } : j
+    setJobs(prevJobs => prevJobs.map(j =>
+      j.id === jobId ? { ...j, outputs: { ...j.outputs, ...outputs } } : j
     ));
   }, []);
 
@@ -114,13 +114,13 @@ export function useJobApplications(): UseJobApplicationsReturn {
     jobs,
     activeJobId,
     currentJob,
-    
+
     // Actions
     addJob,
     selectJob,
     deleteJob,
     updateJobOutputs,
-    
+
     // For backward compatibility
     setJobs,
     setActiveJobId

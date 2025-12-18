@@ -60,8 +60,6 @@ export type View = 'landing' | 'app' | 'dashboard' | 'pricing' | 'terms' | 'priv
 export interface AppState {
   status: AppStatus;
   error?: string;
-  library: LibraryState;
-  activeJobId: string | null;
   resumeText: string;
   research: ResearchResult | null;
   analysis: AnalysisResult | null;
