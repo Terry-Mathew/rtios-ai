@@ -48,28 +48,25 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
           <h2 className="font-tiempos text-xl font-bold text-text-primary">Outreach Config</h2>
         </div>
 
-        {/* 1. Target Audience - Segmented Control */}
-        <div className="mb-8">
+        {/* 1. Target Audience - Radio Style */}
+        <div className="mb-6">
           <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-3">Target Audience</label>
-          <div className="flex p-1 bg-surface-base rounded-lg border border-white/5">
-            <button
-              onClick={() => handleInputChange('connectionStatus', 'new')}
-              className={`flex - 1 py - 2.5 text - xs font - interstate font - bold uppercase tracking - wide rounded - md transition - all ${input.connectionStatus === 'new'
-                  ? 'bg-accent text-surface-base shadow-lg'
-                  : 'text-text-secondary hover:text-text-primary'
-                } `}
-            >
-              New Connection
-            </button>
-            <button
-              onClick={() => handleInputChange('connectionStatus', 'existing')}
-              className={`flex - 1 py - 2.5 text - xs font - interstate font - bold uppercase tracking - wide rounded - md transition - all ${input.connectionStatus === 'existing'
-                  ? 'bg-accent text-surface-base shadow-lg'
-                  : 'text-text-secondary hover:text-text-primary'
-                } `}
-            >
-              Re-engage
-            </button>
+          <div className="flex gap-2">
+            {['NEW CONNECTION', 'RE-ENGAGE'].map((audience) => (
+              <button
+                key={audience}
+                onClick={() => handleInputChange('connectionStatus', audience === 'NEW CONNECTION' ? 'new' : 'existing')}
+                className={`
+                  flex-1 py-2 px-4 rounded-md text-[10px] font-interstate font-bold uppercase tracking-wide transition-all duration-200 ease-in-out
+                  ${(audience === 'NEW CONNECTION' && input.connectionStatus === 'new') || (audience === 'RE-ENGAGE' && input.connectionStatus === 'existing')
+                    ? 'bg-accent/70 text-white shadow-lg scale-105 border-2 border-accent/60'
+                    : 'bg-surface-elevated border-2 border-border-base text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                  }
+                `}
+              >
+                {audience}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -81,7 +78,7 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
             </label>
             <input
               type="text"
-              className="w-full bg-transparent border-b border-white/20 py-2 text-sm font-interstate text-text-primary focus:outline-none focus:border-accent transition-colors placeholder:text-white/10 uppercase"
+              className="w-full bg-transparent border-b border-white/20 py-2 text-sm font-interstate text-text-primary focus:outline-none focus:border-accent transition-colors placeholder-text-secondary/60 uppercase"
               placeholder="NAME"
               value={input.recruiterName}
               onChange={(e) => handleInputChange('recruiterName', e.target.value)}
@@ -93,7 +90,7 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
             </label>
             <input
               type="text"
-              className="w-full bg-transparent border-b border-white/20 py-2 text-sm font-interstate text-text-primary focus:outline-none focus:border-accent transition-colors placeholder:text-white/10 uppercase"
+              className="w-full bg-transparent border-b border-white/20 py-2 text-sm font-interstate text-text-primary focus:outline-none focus:border-accent transition-colors placeholder-text-secondary/60 uppercase"
               placeholder="ROLE"
               value={input.recruiterTitle}
               onChange={(e) => handleInputChange('recruiterTitle', e.target.value)}
@@ -140,18 +137,23 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
           </div>
         </div>
 
-        {/* 4. Tone Selector - Horizontal Control */}
+        {/* 4. Tone Calibration - Single Choice Radio Buttons */}
         <div className="mb-6">
-          <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-3">Tone Calibration</label>
+          <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-3">
+            Tone Calibration
+          </label>
           <div className="flex flex-wrap gap-2">
-            {['Warm Professional', 'Professional', 'Casual Confident', 'Industry-Specific'].map((tone) => (
+            {['WARM PROFESSIONAL', 'PROFESSIONAL', 'CASUAL CONFIDENT', 'INDUSTRY-SPECIFIC'].map((tone) => (
               <button
                 key={tone}
                 onClick={() => handleInputChange('tone', tone)}
-                className={`py - 2 px - 3 rounded text - [10px] font - interstate font - bold uppercase tracking - wide transition - all ${input.tone === tone
-                    ? 'bg-accent text-surface-base shadow-lg'
-                    : 'bg-surface-base border border-white/10 text-text-secondary hover:border-white/30 hover:text-text-primary'
-                  } `}
+                className={`
+                  py-2 px-4 rounded-md text-[10px] font-interstate font-bold uppercase tracking-wide transition-all duration-200 ease-in-out
+                  ${input.tone === tone
+                    ? 'bg-accent/70 text-white shadow-lg scale-105 border-2 border-accent/60'
+                    : 'bg-surface-elevated border-2 border-border-base text-text-secondary hover:border-accent/50 hover:text-text-primary hover:scale-102'
+                  }
+                `}
               >
                 {tone}
               </button>
@@ -159,10 +161,27 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
           </div>
         </div>
 
+        {/* Missing Context - Text Area */}
+        <div className="mb-6">
+          <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-2">
+            Missing Context
+          </label>
+          <textarea
+            value={input.missingContext || ''}
+            onChange={(e) => handleInputChange('missingContext', e.target.value)}
+            placeholder="Add any additional context or details not covered above..."
+            rows={3}
+            className="w-full px-4 py-3 bg-surface-elevated border-2 border-border-base rounded-md
+               text-sm text-text-primary placeholder-text-secondary/50
+               focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20
+               transition-all duration-200 resize-none"
+          />
+        </div>
+
         <button
           onClick={onGenerate}
           disabled={!canGenerate || isGenerating}
-          className={`w - full py - 4 px - 4 rounded - sm font - interstate font - bold text - xs uppercase tracking - widest flex items - center justify - center gap - 2 transition - all shadow - lg
+          className={`w-full py-4 px-4 rounded-sm font-interstate font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg
               ${(!canGenerate || isGenerating)
               ? 'bg-white/5 text-text-secondary cursor-not-allowed border border-white/5'
               : 'bg-accent text-surface-base hover:bg-white hover:text-surface-base transform active:scale-[0.98]'
@@ -174,7 +193,7 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
               Drafting Strategy...
             </>
           ) : !canGenerate ? (
-            "Missing Context"
+            "Complete Configuration"
           ) : (
             <>
               <Send className="w-3 h-3" />

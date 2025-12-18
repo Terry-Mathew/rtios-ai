@@ -38,6 +38,7 @@ export interface LinkedInMessageInput {
   mutualConnection: string;
   customAddition: string;
   tone: LinkedInTone;
+  missingContext?: string;
 }
 
 export interface InterviewQuestion {
@@ -45,14 +46,14 @@ export interface InterviewQuestion {
   question: string;
   type: 'Behavioral' | 'Technical' | 'Situational';
   context: string;
-  
+
   // Detailed Guidance Strategy
   answerStructure: string; // e.g. "STAR Method"
   resumeLeverage: string; // Specific evidence from resume
   answerFraming: string; // Key themes/vocabulary to use
-  
+
   // Sample Answer Config
-  sampleAnswer?: string; 
+  sampleAnswer?: string;
   sampleAnswerType?: 'resume-grounded' | 'hypothetical';
 
   resumeGap: string | null;

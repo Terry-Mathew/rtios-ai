@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './src/App';
 import { CareerContextProvider } from './domains/career/CareerContextProvider';
 
 const rootElement = document.getElementById('root');

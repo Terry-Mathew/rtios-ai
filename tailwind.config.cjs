@@ -3,12 +3,11 @@ module.exports = {
   darkMode: 'class',
   content: [
     './index.html',
-    './index.tsx',
-    './App.tsx',
-    './components/**/*.{ts,tsx}',
-    './domains/**/*.{ts,tsx}',
-    './utils/**/*.{ts,tsx}',
-    './services/**/*.{ts,tsx}',
+    './src/**/*.{js,ts,jsx,tsx}',
+    './domains/**/*.{js,ts,jsx,tsx}',
+    './shared/**/*.{js,ts,jsx,tsx}',
+    './services/**/*.{js,ts,jsx,tsx}',
+    './*.tsx',  // Root-level files (App.tsx, etc.)
   ],
   theme: {
     extend: {

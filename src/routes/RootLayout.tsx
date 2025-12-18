@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { NavigationSidebar } from '../components/layout/NavigationSidebar';
+
 import AuthModal from '../components/ui/AuthModal';
 import { useAppStore } from '../stores/appStore';
 
@@ -20,7 +20,7 @@ const RootLayout: React.FC = () => {
 
     return (
         <div className="flex h-screen bg-surface-base text-text-primary font-sans overflow-hidden selection:bg-accent/30">
-            <NavigationSidebar onLogoClick={() => navigate('/')} />
+
             <main className="flex-1 overflow-auto relative flex flex-col">
                 <Outlet />
             </main>
