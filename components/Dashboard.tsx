@@ -209,8 +209,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 <div
                                     key={job.id}
                                     onClick={() => {
-                                        onSelectStrategy(job.id!);
-                                        onNavigateToApp();
+                                        if (job.id) {
+                                            onSelectStrategy(job.id);
+                                            onNavigateToApp();
+                                        }
                                     }}
                                     className={`grid grid-cols-12 gap-4 p-4 border-b border-white/5 items-center hover:bg-white/5 transition-colors group cursor-pointer
                                     ${activeJobId === job.id ? 'bg-accent/5' : ''}`}
@@ -242,7 +244,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                onDeleteJob(job.id!);
+                                                const id = job.id;
+                                                if (!id) return;
+                                                onDeleteJob(id);
                                             }}
                                             className="p-2 text-text-secondary hover:text-alert-gap transition-colors opacity-100 md:opacity-0 group-hover:opacity-100"
                                             title="Delete Application"

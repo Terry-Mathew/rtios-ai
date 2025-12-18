@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Hexagon, LayoutGrid, FileText, MessageSquare, Brain } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
-import type { View } from '../../../types';
 
 interface NavigationSidebarProps {
     onLogoClick: () => void;

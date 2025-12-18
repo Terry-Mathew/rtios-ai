@@ -67,7 +67,7 @@ Rtios AI transforms the chaotic job search process into a strategic, data-driven
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/rtios-ai.git
+git clone https://github.com/Terry-Mathew/rtios-ai
 cd rtios-ai
 
 # Install dependencies

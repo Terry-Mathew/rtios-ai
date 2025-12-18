@@ -87,7 +87,7 @@ export const useJobManagement = (): UseJobManagementReturn => {
         if (!activeJobId) return;
         const snapshot = createSnapshot(appState);
         updateJobOutputs(activeJobId, snapshot);
-    }, [activeJobId, updateJobOutputs]);
+    }, [activeJobId, updateJobOutputs, appState]);
 
     // Add new job (snapshots current first)
     const addJob = useCallback((job: JobInfo) => {
@@ -95,7 +95,7 @@ export const useJobManagement = (): UseJobManagementReturn => {
         addJobToApplications(job);
         clearWorkspaceStore(appState.linkedIn.input);
         setStatus(AppStatus.IDLE);
-    }, [activeJobId, snapshotCurrentJob, addJobToApplications, clearWorkspaceStore, setStatus]);
+    }, [activeJobId, snapshotCurrentJob, addJobToApplications, clearWorkspaceStore, setStatus, appState]);
 
     // Select/switch to different job
     const selectJob = useCallback((jobId: string) => {
@@ -117,7 +117,7 @@ export const useJobManagement = (): UseJobManagementReturn => {
         if (hydratedState.coverLetter) updateCoverLetter(hydratedState.coverLetter);
         if (hydratedState.linkedIn) updateLinkedIn(hydratedState.linkedIn);
         if (hydratedState.interviewPrep) updateInterviewPrep(hydratedState.interviewPrep);
-        setStatus(AppStatus.IDLE);
+        if (!hydratedState.status) setStatus(AppStatus.IDLE);
 
         // 4. Set as active
         setActiveJobId(jobId);
@@ -132,7 +132,8 @@ export const useJobManagement = (): UseJobManagementReturn => {
         updateCoverLetter,
         updateLinkedIn,
         updateInterviewPrep,
-        setActiveJobId
+        setActiveJobId,
+        appState
     ]);
 
     // Delete job (simple)
@@ -147,7 +148,7 @@ export const useJobManagement = (): UseJobManagementReturn => {
         if (wasActive) {
             clearWorkspaceStore(appState.linkedIn.input);
         }
-    }, [activeJobId, handleDeleteJob, clearWorkspaceStore]);
+    }, [activeJobId, handleDeleteJob, clearWorkspaceStore, appState]);
 
     // Add new job strategy (clears workspace)
     const addNewJobStrategy = useCallback(() => {
@@ -155,7 +156,7 @@ export const useJobManagement = (): UseJobManagementReturn => {
         setActiveJobId(null);
         clearWorkspaceStore(appState.linkedIn.input);
         setStatus(AppStatus.IDLE);
-    }, [activeJobId, snapshotCurrentJob, setActiveJobId, clearWorkspaceStore, setStatus]);
+    }, [activeJobId, snapshotCurrentJob, setActiveJobId, clearWorkspaceStore, setStatus, appState]);
 
     return {
         // Data

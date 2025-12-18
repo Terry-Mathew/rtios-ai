@@ -31,7 +31,11 @@ const Footer: React.FC = () => {
           <button onClick={() => navigate('/about')} className="font-interstate text-xs text-text-secondary hover:text-text-primary transition-colors">
             About
           </button>
-          <button className="font-interstate text-xs text-text-secondary hover:text-text-primary transition-colors opacity-50 cursor-not-allowed">
+          <button
+            disabled
+            aria-disabled="true"
+            className="font-interstate text-xs text-text-secondary hover:text-text-primary transition-colors opacity-50 cursor-not-allowed"
+          >
             Contact
           </button>
         </div>
