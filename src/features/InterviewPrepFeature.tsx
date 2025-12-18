@@ -1,7 +1,7 @@
 import React from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWorkspaceStore } from '../stores/workspaceStore';
-import InterviewPrepDisplay from '../../components/InterviewPrepDisplay';
+import InterviewPrepDisplay from '../components/features/interview/InterviewPrepDisplay';
 import * as AIOrchestrator from '../../domains/intelligence/services/orchestrator';
 import type { SavedResume, JobInfo } from '../../types';
 

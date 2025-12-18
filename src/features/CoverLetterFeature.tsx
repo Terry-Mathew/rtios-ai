@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWorkspaceStore } from '../stores/workspaceStore';
-import CoverLetterDisplay from '../../components/CoverLetterDisplay';
+import CoverLetterDisplay from '../components/features/cover-letter/CoverLetterDisplay';
 import * as AIOrchestrator from '../../domains/intelligence/services/orchestrator';
 import { ToneType } from '../../types';
 import type { SavedResume, JobInfo, UserProfile } from '../../types';

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AnalysisResult } from '../types';
+import { AnalysisResult } from '../../../../types';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 import { AlertTriangle, CheckCircle2, TrendingUp, Search, Target } from 'lucide-react';
 

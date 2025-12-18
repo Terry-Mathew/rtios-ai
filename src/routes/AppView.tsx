@@ -15,7 +15,7 @@ import { RightSidebar } from '../components/layout/RightSidebar';
 import { CoverLetterFeature } from '../features/CoverLetterFeature';
 import { LinkedInFeature } from '../features/LinkedInFeature';
 import { InterviewPrepFeature } from '../features/InterviewPrepFeature';
-import ContextSwitcher from '../../components/ContextSwitcher';
+import ContextSwitcher from '../components/layout/ContextSwitcher';
 import { useResumeManagement } from '../hooks/useResumeManagement';
 import { useJobManagement } from '../hooks/useJobManagement';
 import { AppStatus, ToneType } from '../../types';

@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import { JobInfo, SavedResume, UserProfile } from '../types';
+import { JobInfo, SavedResume, UserProfile } from '../../../types';
 import { Trash2, FileText, CheckCircle2, ArrowRight, Upload, Briefcase, Globe, User, RotateCcw } from 'lucide-react';
 
 interface DashboardProps {

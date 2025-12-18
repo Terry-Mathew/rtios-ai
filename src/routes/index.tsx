@@ -4,11 +4,11 @@ import RootLayout from './RootLayout';
 import LoadingFallback from '../components/shared/LoadingFallback';
 
 // Lazy load route components
-const LandingPage = lazy(() => import('../../components/LandingPage'));
-const PricingPage = lazy(() => import('../../components/PricingPage'));
+const LandingPage = lazy(() => import('../pages/LandingPage'));
+const PricingPage = lazy(() => import('../pages/PricingPage'));
 const DashboardView = lazy(() => import('./DashboardView'));
 const AppView = lazy(() => import('./AppView'));
-const LegalPages = lazy(() => import('../../components/LegalPages'));
+const LegalPages = lazy(() => import('../pages/LegalPages'));
 
 // Helper to wrap components in Suspense
 const withSuspense = (Component: React.ComponentType<any>, props = {}) => (

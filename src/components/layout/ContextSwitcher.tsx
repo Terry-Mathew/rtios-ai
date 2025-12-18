@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { JobInfo, SavedResume } from '../types';
+import { JobInfo, SavedResume } from '../../../types';
 import { ChevronDown, Plus, Check } from 'lucide-react';
 
 interface ContextSwitcherProps {

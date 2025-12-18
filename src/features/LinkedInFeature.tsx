@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWorkspaceStore } from '../stores/workspaceStore';
-import LinkedInMessageGenerator from '../../components/LinkedInMessageGenerator';
+import LinkedInMessageGenerator from '../components/features/linkedin/LinkedInMessageGenerator';
 import * as AIOrchestrator from '../../domains/intelligence/services/orchestrator';
 import type { SavedResume, JobInfo, LinkedInState } from '../../types';
 

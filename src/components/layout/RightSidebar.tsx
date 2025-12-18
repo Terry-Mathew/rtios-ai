@@ -1,14 +1,14 @@
 import React, { lazy, Suspense } from 'react';
 import { useAppStore } from '../../stores/appStore';
-import InputForm from '../../../components/InputForm';
-import CompanyResearchDisplay from '../../../components/CompanyResearchDisplay';
+import InputForm from './InputForm';
+import CompanyResearchDisplay from '../features/research/CompanyResearchDisplay';
 import { useShallow } from 'zustand/react/shallow';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import type { SavedResume, UserProfile, JobInfo, AppStatus } from '../../../types';
-import LoadingFallback from '../../components/shared/LoadingFallback';
+import LoadingFallback from '../shared/LoadingFallback';
 
 // Lazy load heavy chart component
-const ResumeAnalysisDisplay = lazy(() => import('../../../components/ResumeAnalysisDisplay'));
+const ResumeAnalysisDisplay = lazy(() => import('../features/analysis/ResumeAnalysisDisplay'));
 
 interface RightSidebarProps {
     // Resume/Profile data

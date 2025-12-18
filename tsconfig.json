@@ -20,15 +20,22 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noEmit": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     },
-    "allowImportingTsExtensions": true,
     "types": [
       "vite/client"
-    ],
-    "noEmit": true
-  }
+    ]
+  },
+  "include": [
+    "src",
+    "domains",
+    "shared",
+    "services",
+    "types.ts"
+  ]
 }

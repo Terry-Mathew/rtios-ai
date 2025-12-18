@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { LinkedInState, LinkedInMessageInput, JobInfo, CONNECTION_CONTEXTS, MESSAGE_INTENTS } from '../types';
+import { LinkedInState, LinkedInMessageInput, JobInfo, CONNECTION_CONTEXTS, MESSAGE_INTENTS } from '../../../../types';
 import { Send, Copy, RefreshCw, Check, MessageSquare, ChevronDown } from 'lucide-react';
 
 interface LinkedInMessageGeneratorProps {
@@ -55,19 +54,19 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
           <div className="flex p-1 bg-surface-base rounded-lg border border-white/5">
             <button
               onClick={() => handleInputChange('connectionStatus', 'new')}
-              className={`flex-1 py-2.5 text-xs font-interstate font-bold uppercase tracking-wide rounded-md transition-all ${input.connectionStatus === 'new'
-                ? 'bg-accent text-surface-base shadow-lg'
-                : 'text-text-secondary hover:text-text-primary'
-                }`}
+              className={`flex - 1 py - 2.5 text - xs font - interstate font - bold uppercase tracking - wide rounded - md transition - all ${input.connectionStatus === 'new'
+                  ? 'bg-accent text-surface-base shadow-lg'
+                  : 'text-text-secondary hover:text-text-primary'
+                } `}
             >
               New Connection
             </button>
             <button
               onClick={() => handleInputChange('connectionStatus', 'existing')}
-              className={`flex-1 py-2.5 text-xs font-interstate font-bold uppercase tracking-wide rounded-md transition-all ${input.connectionStatus === 'existing'
-                ? 'bg-accent text-surface-base shadow-lg'
-                : 'text-text-secondary hover:text-text-primary'
-                }`}
+              className={`flex - 1 py - 2.5 text - xs font - interstate font - bold uppercase tracking - wide rounded - md transition - all ${input.connectionStatus === 'existing'
+                  ? 'bg-accent text-surface-base shadow-lg'
+                  : 'text-text-secondary hover:text-text-primary'
+                } `}
             >
               Re-engage
             </button>
@@ -149,10 +148,10 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
               <button
                 key={tone}
                 onClick={() => handleInputChange('tone', tone)}
-                className={`py-2 px-3 rounded text-[10px] font-interstate font-bold uppercase tracking-wide transition-all ${input.tone === tone
-                  ? 'bg-accent text-surface-base shadow-lg'
-                  : 'bg-surface-base border border-white/10 text-text-secondary hover:border-white/30 hover:text-text-primary'
-                  }`}
+                className={`py - 2 px - 3 rounded text - [10px] font - interstate font - bold uppercase tracking - wide transition - all ${input.tone === tone
+                    ? 'bg-accent text-surface-base shadow-lg'
+                    : 'bg-surface-base border border-white/10 text-text-secondary hover:border-white/30 hover:text-text-primary'
+                  } `}
               >
                 {tone}
               </button>
@@ -163,11 +162,11 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
         <button
           onClick={onGenerate}
           disabled={!canGenerate || isGenerating}
-          className={`w-full py-4 px-4 rounded-sm font-interstate font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg
+          className={`w - full py - 4 px - 4 rounded - sm font - interstate font - bold text - xs uppercase tracking - widest flex items - center justify - center gap - 2 transition - all shadow - lg
               ${(!canGenerate || isGenerating)
               ? 'bg-white/5 text-text-secondary cursor-not-allowed border border-white/5'
               : 'bg-accent text-surface-base hover:bg-white hover:text-surface-base transform active:scale-[0.98]'
-            }`}
+            } `}
         >
           {isGenerating ? (
             <>

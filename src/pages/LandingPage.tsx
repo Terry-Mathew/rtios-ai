@@ -1,8 +1,8 @@
 
 import { useEffect } from 'react';
 import { ArrowRight, FileText, BarChart2, Brain, Target, Search, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import Footer from '../shared/layout/Footer';
-import { useAppStore } from '../src/stores/appStore';
+import Footer from '../../shared/layout/Footer';
+import { useAppStore } from '../stores/appStore';
 
 const LandingPage: React.FC = () => {
     const setAuthModalOpen = useAppStore((s) => s.setIsAuthModalOpen);

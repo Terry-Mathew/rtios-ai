@@ -6,7 +6,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Dashboard from '../../components/Dashboard';
+import Dashboard from '../components/layout/Dashboard';
 import { useResumeManagement } from '../hooks/useResumeManagement';
 import { useJobManagement } from '../hooks/useJobManagement';
 import { useAppStore } from '../stores/appStore';

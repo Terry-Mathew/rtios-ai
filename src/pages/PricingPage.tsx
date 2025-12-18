@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Check, ArrowLeft } from 'lucide-react';
-import Footer from '../shared/layout/Footer';
+import Footer from '../../shared/layout/Footer';
 
 const PricingPage: React.FC = () => {
     const navigate = useNavigate();

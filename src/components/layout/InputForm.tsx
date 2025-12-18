@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { JobInfo, UserProfile, SavedResume, AppStatus } from '../types';
+import { JobInfo, UserProfile, SavedResume, AppStatus } from '../../../types';
 import { Briefcase, FileText, RefreshCw, FolderOpen, AlertCircle, Plus, Check, Trash2 } from 'lucide-react';
-import * as GeminiService from '../services/geminiService';
+import * as GeminiService from '../../../domains/intelligence/services/gemini';
 
 interface InputFormProps {
     // Resume Props
