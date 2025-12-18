@@ -17,6 +17,8 @@ import { useWorkspaceStore } from '../stores/workspaceStore';
 import { createSnapshot, hydrateFromJob } from '../../domains/jobs/controllers/JobSnapshotController';
 import { AppStatus } from '../../types';
 import type { JobInfo } from '../../types';
+import { errorService } from '../services/errorService';
+import { useToastStore } from '../stores/toastStore';
 
 interface UseJobManagementReturn {
     // Data
@@ -84,17 +86,32 @@ export const useJobManagement = (): UseJobManagementReturn => {
 
     // Snapshot current workspace to active job
     const snapshotCurrentJob = useCallback(() => {
-        if (!activeJobId) return;
-        const snapshot = createSnapshot(appState);
-        updateJobOutputs(activeJobId, snapshot);
+        try {
+            if (!activeJobId) return;
+            const snapshot = createSnapshot(appState);
+            updateJobOutputs(activeJobId, snapshot);
+        } catch (error) {
+            console.error('Failed to snapshot job:', error);
+            // Silent fail for auto-save, but log it
+        }
     }, [activeJobId, updateJobOutputs, appState]);
 
     // Add new job (snapshots current first)
     const addJob = useCallback((job: JobInfo) => {
-        if (activeJobId) snapshotCurrentJob();
-        addJobToApplications(job);
-        clearWorkspaceStore(appState.linkedIn.input);
-        setStatus(AppStatus.IDLE);
+        try {
+            if (activeJobId) snapshotCurrentJob();
+            addJobToApplications(job);
+            clearWorkspaceStore(appState.linkedIn.input);
+            setStatus(AppStatus.IDLE);
+            useToastStore.getState().addToast({ type: 'success', message: 'Job added successfully' });
+        } catch (error) {
+            const message = errorService.handleError(error as Error, {
+                component: 'useJobManagement',
+                action: 'addJob',
+                jobTitle: job.title
+            });
+            useToastStore.getState().addToast({ type: 'error', message });
+        }
     }, [activeJobId, snapshotCurrentJob, addJobToApplications, clearWorkspaceStore, setStatus, appState]);
 
     // Select/switch to different job
@@ -138,15 +155,35 @@ export const useJobManagement = (): UseJobManagementReturn => {
 
     // Delete job (simple)
     const deleteJob = useCallback((jobId: string) => {
-        handleDeleteJob(jobId);
+        try {
+            handleDeleteJob(jobId);
+            useToastStore.getState().addToast({ type: 'success', message: 'Job deleted' });
+        } catch (error) {
+            const message = errorService.handleError(error as Error, {
+                component: 'useJobManagement',
+                action: 'deleteJob',
+                jobId
+            });
+            useToastStore.getState().addToast({ type: 'error', message });
+        }
     }, [handleDeleteJob]);
 
     // Delete job with workspace clear
     const deleteJobWithWorkspaceClear = useCallback((jobId: string) => {
-        const wasActive = activeJobId === jobId;
-        handleDeleteJob(jobId);
-        if (wasActive) {
-            clearWorkspaceStore(appState.linkedIn.input);
+        try {
+            const wasActive = activeJobId === jobId;
+            handleDeleteJob(jobId);
+            if (wasActive) {
+                clearWorkspaceStore(appState.linkedIn.input);
+            }
+            useToastStore.getState().addToast({ type: 'success', message: 'Job deleted' });
+        } catch (error) {
+            const message = errorService.handleError(error as Error, {
+                component: 'useJobManagement',
+                action: 'deleteJobWithWorkspaceClear',
+                jobId
+            });
+            useToastStore.getState().addToast({ type: 'error', message });
         }
     }, [activeJobId, handleDeleteJob, clearWorkspaceStore, appState]);
 

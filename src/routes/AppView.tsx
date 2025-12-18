@@ -21,6 +21,11 @@ import { useJobManagement } from '../hooks/useJobManagement';
 import { AppStatus, JobInfo, ToneType } from '../../types';
 import { Layout } from 'lucide-react';
 import * as GeminiService from '../../domains/intelligence/services/gemini';
+import { ErrorBoundary } from '../components/errors/ErrorBoundary';
+import { FeatureErrorBoundary } from '../components/errors/FeatureErrorBoundary';
+import { ToastContainer } from '../components/ui/ToastContainer';
+import { errorService } from '../services/errorService';
+import { useToastStore } from '../stores/toastStore';
 
 const AppView: React.FC = () => {
     const navigate = useNavigate();
@@ -46,8 +51,14 @@ const AppView: React.FC = () => {
         addResume: handleAddResume,
         selectResume: handleSelectResume,
         deleteResume: handleDeleteResume,
-        updateProfile: setUserProfile
+        updateProfile: setUserProfile,
+        syncFromStorage // NEW: Sync function
     } = useResumeManagement();
+
+    // Sync career data from storage when mounting AppView
+    useEffect(() => {
+        syncFromStorage();
+    }, [syncFromStorage]);
 
     const {
         jobs,
@@ -145,106 +156,124 @@ const AppView: React.FC = () => {
             // Switch Sidebar to Analysis on completion
             setActiveSidebarTab('analysis');
 
+            setActiveSidebarTab('analysis');
+
         } catch (e: any) {
-            handleError(e.message || "An unexpected error occurred.");
+            const message = errorService.handleError(e, {
+                component: 'AppView',
+                action: 'handleGenerate',
+                jobId: activeJobId || undefined,
+                resumeId: activeResumeId || undefined
+            });
+            handleError(message);
+            useToastStore.getState().addToast({ type: 'error', message });
         }
     };
 
     return (
-        <div className="flex h-screen bg-surface-base text-text-primary overflow-hidden">
-            {/* 1. Left Navigation Sidebar (Vertical) */}
-            <NavigationSidebar
-                onLogoClick={() => navigate('/')}
-                onSnapshotBeforeDashboard={snapshotCurrentJob}
-            />
-
-            {/* 2. Main Content Area (Flexible) */}
-            <main className="flex-1 flex flex-col bg-surface-base relative border-r border-white/5 min-w-0 overflow-hidden">
-                {/* Global Context Switcher */}
-                <ContextSwitcher
-                    jobs={jobs}
-                    activeJobId={activeJobId}
-                    resumes={resumes}
-                    activeResumeId={activeResumeId}
-                    onSelectStrategy={handleSelectStrategy}
-                    onAddNew={handleAddNewStrategy}
+        <ErrorBoundary>
+            <div className="flex h-screen bg-surface-base text-text-primary overflow-hidden">
+                {/* 1. Left Navigation Sidebar (Vertical) */}
+                <NavigationSidebar
+                    onLogoClick={() => navigate('/')}
+                    onSnapshotBeforeDashboard={snapshotCurrentJob}
                 />
 
-                {/* Loading Overlay */}
-                {(appState.status === AppStatus.PARSING_RESUME || appState.status === AppStatus.RESEARCHING || appState.status === AppStatus.ANALYZING || appState.status === AppStatus.GENERATING) && (
-                    <div className="absolute inset-0 bg-surface-base/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
-                        <div className="flex flex-col items-center gap-6">
-                            <div className="relative w-16 h-16">
-                                <div className="absolute inset-0 border-t-2 border-accent rounded-full animate-spin"></div>
-                                <div className="absolute inset-2 border-r-2 border-white/20 rounded-full animate-spin [animation-direction:reverse]"></div>
-                            </div>
-                            <div className="font-interstate text-xs font-bold text-accent uppercase tracking-[0.2em] animate-pulse">
-                                {appState.status === AppStatus.PARSING_RESUME && "Ingesting Profile Data..."}
-                                {appState.status === AppStatus.RESEARCHING && "Running Market Intelligence..."}
-                                {appState.status === AppStatus.ANALYZING && "Calculating Fit Score..."}
-                                {appState.status === AppStatus.GENERATING && "Synthesizing Draft..."}
+                {/* 2. Main Content Area (Flexible) */}
+                <main className="flex-1 flex flex-col bg-surface-base relative border-r border-white/5 min-w-0 overflow-hidden">
+                    {/* Global Context Switcher */}
+                    <ContextSwitcher
+                        jobs={jobs}
+                        activeJobId={activeJobId}
+                        resumes={resumes}
+                        activeResumeId={activeResumeId}
+                        onSelectStrategy={handleSelectStrategy}
+                        onAddNew={handleAddNewStrategy}
+                    />
+
+                    {/* Loading Overlay */}
+                    {(appState.status === AppStatus.PARSING_RESUME || appState.status === AppStatus.RESEARCHING || appState.status === AppStatus.ANALYZING || appState.status === AppStatus.GENERATING) && (
+                        <div className="absolute inset-0 bg-surface-base/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+                            <div className="flex flex-col items-center gap-6">
+                                <div className="relative w-16 h-16">
+                                    <div className="absolute inset-0 border-t-2 border-accent rounded-full animate-spin"></div>
+                                    <div className="absolute inset-2 border-r-2 border-white/20 rounded-full animate-spin [animation-direction:reverse]"></div>
+                                </div>
+                                <div className="font-interstate text-xs font-bold text-accent uppercase tracking-[0.2em] animate-pulse">
+                                    {appState.status === AppStatus.PARSING_RESUME && "Ingesting Profile Data..."}
+                                    {appState.status === AppStatus.RESEARCHING && "Running Market Intelligence..."}
+                                    {appState.status === AppStatus.ANALYZING && "Calculating Fit Score..."}
+                                    {appState.status === AppStatus.GENERATING && "Synthesizing Draft..."}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Empty State */}
-                {appState.status === AppStatus.IDLE && activeModule !== 'linkedin' && !activeJobId && !activeResumeId && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center opacity-30 pointer-events-none mt-20">
-                        <Layout className="w-24 h-24 text-text-secondary mb-4" />
-                        <h1 className="font-tiempos text-3xl text-text-primary">Rtios AI</h1>
-                        <p className="font-interstate text-sm text-text-secondary mt-2">Executive Intelligence Suite</p>
-                    </div>
-                )}
+                    {/* Empty State */}
+                    {appState.status === AppStatus.IDLE && activeModule !== 'linkedin' && !activeJobId && !activeResumeId && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center opacity-30 pointer-events-none mt-20">
+                            <Layout className="w-24 h-24 text-text-secondary mb-4" />
+                            <h1 className="font-tiempos text-3xl text-text-primary">Rtios AI</h1>
+                            <p className="font-interstate text-sm text-text-secondary mt-2">Executive Intelligence Suite</p>
+                        </div>
+                    )}
 
-                {/* Module Render */}
-                <>
-                    <div className={`h-full flex flex-col ${activeModule === 'coverLetter' ? 'block' : 'hidden'}`}>
-                        <CoverLetterFeature
-                            currentResume={currentResume}
-                            currentJob={currentJob}
-                            userProfile={userProfile}
-                            activeJobId={activeJobId}
-                            onUpdateJobOutputs={updateJobOutputs}
-                        />
-                    </div>
-                    <div className={`h-full flex flex-col ${activeModule === 'linkedin' ? 'block' : 'hidden'}`}>
-                        <LinkedInFeature
-                            currentResume={currentResume}
-                            currentJob={currentJob}
-                            activeJobId={activeJobId}
-                            onUpdateJobOutputs={updateJobOutputs}
-                        />
-                    </div>
-                    <div className={`h-full flex flex-col ${activeModule === 'interview' ? 'block' : 'hidden'}`}>
-                        <InterviewPrepFeature
-                            currentResume={currentResume}
-                            currentJob={currentJob}
-                            activeJobId={activeJobId}
-                            onUpdateJobOutputs={updateJobOutputs}
-                        />
-                    </div>
-                </>
-            </main>
+                    {/* Module Render */}
+                    <>
+                        <div className={`h-full flex flex-col ${activeModule === 'coverLetter' ? 'block' : 'hidden'}`}>
+                            <FeatureErrorBoundary featureName="Cover Letter">
+                                <CoverLetterFeature
+                                    currentResume={currentResume}
+                                    currentJob={currentJob}
+                                    userProfile={userProfile}
+                                    activeJobId={activeJobId}
+                                    onUpdateJobOutputs={updateJobOutputs}
+                                />
+                            </FeatureErrorBoundary>
+                        </div>
+                        <div className={`h-full flex flex-col ${activeModule === 'linkedin' ? 'block' : 'hidden'}`}>
+                            <FeatureErrorBoundary featureName="LinkedIn">
+                                <LinkedInFeature
+                                    currentResume={currentResume}
+                                    currentJob={currentJob}
+                                    activeJobId={activeJobId}
+                                    onUpdateJobOutputs={updateJobOutputs}
+                                />
+                            </FeatureErrorBoundary>
+                        </div>
+                        <div className={`h-full flex flex-col ${activeModule === 'interview' ? 'block' : 'hidden'}`}>
+                            <FeatureErrorBoundary featureName="Interview Prep">
+                                <InterviewPrepFeature
+                                    currentResume={currentResume}
+                                    currentJob={currentJob}
+                                    activeJobId={activeJobId}
+                                    onUpdateJobOutputs={updateJobOutputs}
+                                />
+                            </FeatureErrorBoundary>
+                        </div>
+                    </>
+                </main>
 
-            {/* 3. Right Sidebar (Context & Intelligence) */}
-            <RightSidebar
-                resumes={resumes}
-                activeResumeId={activeResumeId}
-                userProfile={userProfile}
-                onAddResume={handleAddResume}
-                onSelectResume={handleSelectResume}
-                onDeleteResume={handleDeleteResume}
-                onUpdateProfile={setUserProfile}
-                jobs={jobs}
-                activeJobId={activeJobId}
-                onAddJob={handleAddJob}
-                onSelectJob={handleSelectStrategy}
-                onDeleteJob={handleDeleteJobWithWorkspaceClear}
-                onGenerate={handleGenerate}
-                appStatus={appState.status}
-            />
-        </div>
+                {/* 3. Right Sidebar (Context & Intelligence) */}
+                <RightSidebar
+                    resumes={resumes}
+                    activeResumeId={activeResumeId}
+                    userProfile={userProfile}
+                    onAddResume={handleAddResume}
+                    onSelectResume={handleSelectResume}
+                    onDeleteResume={handleDeleteResume}
+                    onUpdateProfile={setUserProfile}
+                    jobs={jobs}
+                    activeJobId={activeJobId}
+                    onAddJob={handleAddJob}
+                    onSelectJob={handleSelectStrategy}
+                    onDeleteJob={handleDeleteJobWithWorkspaceClear}
+                    onGenerate={handleGenerate}
+                    appStatus={appState.status}
+                />
+                <ToastContainer />
+            </div>
+        </ErrorBoundary>
     );
 };
 

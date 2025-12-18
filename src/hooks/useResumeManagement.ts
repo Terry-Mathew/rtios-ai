@@ -18,6 +18,8 @@ import { fileToBase64 } from '../../utils/fileUtils';
 import * as GeminiService from '../../domains/intelligence/services/gemini';
 import { AppStatus } from '../../types';
 import type { SavedResume, UserProfile } from '../../domains/career/types';
+import { errorService } from '../services/errorService';
+import { useToastStore } from '../stores/toastStore';
 
 interface UseResumeManagementReturn {
     // Data
@@ -31,6 +33,7 @@ interface UseResumeManagementReturn {
     selectResume: (id: string) => void;
     deleteResume: (id: string) => void;
     updateProfile: (profile: UserProfile) => void;
+    syncFromStorage: () => void; // NEW: Reload from localStorage
 }
 
 export const useResumeManagement = (): UseResumeManagementReturn => {
@@ -44,6 +47,7 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
         selectResume: handleSelectResume,
         deleteResume: handleDeleteResume,
         updateProfile: setUserProfile,
+        syncFromStorage, // NEW: Sync function from context
     } = useCareerContext();
 
     // Get workspace state (use useShallow to prevent infinite re-renders)
@@ -64,6 +68,10 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
             const base64 = await fileToBase64(file);
             const text = await GeminiService.extractResumeText(base64);
 
+            if (!text || text.trim().length === 0) {
+                throw new Error("Failed to parse resume text. The AI service might be overloaded.");
+            }
+
             const newResume: SavedResume = {
                 id: crypto.randomUUID(),
                 fileName: file.name,
@@ -75,11 +83,19 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
             // Use career context method (handles single resume enforcement + persistence)
             addResumeToContext(newResume);
             setStatus(AppStatus.IDLE);
-            setResumeText(text);
+            setResumeText(text); // Update workspace store with text
+
+            useToastStore.getState().addToast({ type: 'success', message: 'Resume uploaded and parsed successfully' });
         } catch (e) {
-            console.error('Failed to upload and parse resume:', e);
+            const message = errorService.handleError(e as Error, {
+                component: 'useResumeManagement',
+                action: 'addResume',
+                fileName: file.name
+            });
             setStatus(AppStatus.ERROR);
-            throw e;
+            useToastStore.getState().addToast({ type: 'error', message });
+            // Re-throw so UI can react if needed, or swallow? 
+            // Swallowing here as we handled UI feedback via toast/status
         }
     }, [addResumeToContext, setStatus, setResumeText]);
 
@@ -87,14 +103,33 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
      * Select a resume as active (simple passthrough)
      */
     const selectResume = useCallback((id: string) => {
-        handleSelectResume(id);
+        try {
+            handleSelectResume(id);
+        } catch (error) {
+            const message = errorService.handleError(error as Error, {
+                component: 'useResumeManagement',
+                action: 'selectResume',
+                resumeId: id
+            });
+            useToastStore.getState().addToast({ type: 'error', message });
+        }
     }, [handleSelectResume]);
 
     /**
      * Delete a resume (simple passthrough)
      */
     const deleteResume = useCallback((id: string) => {
-        handleDeleteResume(id);
+        try {
+            handleDeleteResume(id);
+            useToastStore.getState().addToast({ type: 'success', message: 'Resume deleted' });
+        } catch (error) {
+            const message = errorService.handleError(error as Error, {
+                component: 'useResumeManagement',
+                action: 'deleteResume',
+                resumeId: id
+            });
+            useToastStore.getState().addToast({ type: 'error', message });
+        }
     }, [handleDeleteResume]);
 
     /**
@@ -115,6 +150,7 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
         addResume,
         selectResume,
         deleteResume,
-        updateProfile
+        updateProfile,
+        syncFromStorage // NEW: Pass through sync function
     };
 };
