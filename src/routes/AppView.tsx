@@ -18,7 +18,7 @@ import { InterviewPrepFeature } from '../features/InterviewPrepFeature';
 import ContextSwitcher from '../../components/ContextSwitcher';
 import { useResumeManagement } from '../hooks/useResumeManagement';
 import { useJobManagement } from '../hooks/useJobManagement';
-import { AppStatus, JobInfo, ToneType } from '../../types';
+import { AppStatus, ToneType } from '../../types';
 import { Layout } from 'lucide-react';
 import * as GeminiService from '../../domains/intelligence/services/gemini';
 import { ErrorBoundary } from '../components/errors/ErrorBoundary';
@@ -32,8 +32,6 @@ const AppView: React.FC = () => {
 
     // --- Navigation State from appStore ---
     const activeModule = useAppStore((s) => s.activeModule);
-    const setActiveModule = useAppStore((s) => s.setActiveModule);
-    const activeSidebarTab = useAppStore((s) => s.activeSidebarTab);
     const setActiveSidebarTab = useAppStore((s) => s.setActiveSidebarTab);
     const setCurrentView = useAppStore((s) => s.setCurrentView);
 
@@ -91,9 +89,6 @@ const AppView: React.FC = () => {
         setResearch,
         setAnalysis,
         updateCoverLetter,
-        updateLinkedIn,
-        updateInterviewPrep,
-        clearWorkspace: clearWorkspaceStore
     } = useWorkspaceStore();
 
     // --- Library Handlers ---
@@ -223,7 +218,7 @@ const AppView: React.FC = () => {
                         <div className={`h-full flex flex-col ${activeModule === 'coverLetter' ? 'block' : 'hidden'}`}>
                             <FeatureErrorBoundary featureName="Cover Letter">
                                 <CoverLetterFeature
-                                    currentResume={currentResume}
+                                    currentResume={currentResume || null}
                                     currentJob={currentJob}
                                     userProfile={userProfile}
                                     activeJobId={activeJobId}
@@ -234,7 +229,7 @@ const AppView: React.FC = () => {
                         <div className={`h-full flex flex-col ${activeModule === 'linkedin' ? 'block' : 'hidden'}`}>
                             <FeatureErrorBoundary featureName="LinkedIn">
                                 <LinkedInFeature
-                                    currentResume={currentResume}
+                                    currentResume={currentResume || null}
                                     currentJob={currentJob}
                                     activeJobId={activeJobId}
                                     onUpdateJobOutputs={updateJobOutputs}
@@ -244,7 +239,7 @@ const AppView: React.FC = () => {
                         <div className={`h-full flex flex-col ${activeModule === 'interview' ? 'block' : 'hidden'}`}>
                             <FeatureErrorBoundary featureName="Interview Prep">
                                 <InterviewPrepFeature
-                                    currentResume={currentResume}
+                                    currentResume={currentResume || null}
                                     currentJob={currentJob}
                                     activeJobId={activeJobId}
                                     onUpdateJobOutputs={updateJobOutputs}

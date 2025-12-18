@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { JobInfo, SavedResume, UserProfile } from '../types';
-import { Trash2, FileText, CheckCircle2, ArrowRight, Upload, Link as LinkIcon, Briefcase, Globe, User, RotateCcw } from 'lucide-react';
+import { Trash2, FileText, CheckCircle2, ArrowRight, Upload, Briefcase, Globe, User, RotateCcw } from 'lucide-react';
 
 interface DashboardProps {
     jobs: JobInfo[];
@@ -22,7 +22,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     resumes,
     userProfile,
     activeJobId,
-    activeResumeId,
     onSelectStrategy,
     onDeleteJob,
     onDeleteResume,

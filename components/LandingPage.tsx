@@ -1,12 +1,10 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { ArrowRight, FileText, BarChart2, Brain, Target, Search, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Footer from '../shared/layout/Footer';
 import { useAppStore } from '../src/stores/appStore';
 
 const LandingPage: React.FC = () => {
-    const navigate = useNavigate();
     const setAuthModalOpen = useAppStore((s) => s.setIsAuthModalOpen);
     const setCurrentView = useAppStore((s) => s.setCurrentView);
 

@@ -51,7 +51,7 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
     } = useCareerContext();
 
     // Get workspace state (use useShallow to prevent infinite re-renders)
-    const { status } = useWorkspaceStore(useShallow((s) => ({
+    useWorkspaceStore(useShallow((s) => ({
         status: s.status
     })));
 

@@ -17,7 +17,7 @@
 
 import type { JobInfo, JobOutputs } from '../types';
 import type { AppState, CoverLetterState, LinkedInState, InterviewPrepState } from '../../workspace/types';
-import type { ResearchResult, AnalysisResult } from '../../intelligence/types';
+
 import { ToneType, AppStatus } from '../../workspace/types';
 
 // Default empty workspace state for hydration fallbacks
@@ -110,7 +110,7 @@ export interface SnapshotOperations {
 
 export function createSnapshotOperations(): SnapshotOperations {
   return {
-    snapshot: (jobId: string, appState: AppState) => createSnapshot(appState),
+    snapshot: (_jobId: string, appState: AppState) => createSnapshot(appState),
     hydrate: hydrateFromJob,
     clear: clearWorkspace
   };
@@ -132,10 +132,10 @@ export function performJobSwitch(
 ): JobSwitchResult {
   // Create snapshot of current state (for old job if exists)
   const snapshotForOldJob = oldJobId ? createSnapshot(currentAppState) : null;
-  
+
   // Hydrate from new job (or clear if no new job)
   const hydratedState = hydrateFromJob(newJob, currentAppState.linkedIn.input);
-  
+
   return {
     snapshotForOldJob,
     hydratedState

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle2, Info, X, AlertTriangle } from 'lucide-react';
-import { ToastData, ToastType } from '../../stores/toastStore';
+import { ToastData } from '../../stores/toastStore';
 
 interface ToastProps extends ToastData {
     onDismiss: (id: string) => void;

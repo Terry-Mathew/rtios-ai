@@ -13,7 +13,7 @@ export const FeatureErrorBoundary: React.FC<FeatureErrorBoundaryProps> = ({
     return (
         <ErrorBoundary
             resetKeys={[featureName]}
-            onError={(error, info) => {
+            onError={(error, _info) => {
                 console.error(`[${featureName}] Error:`, error);
                 // Here you could also log to your centralized error service with feature context
                 // errorService.logError(error, { component: featureName });

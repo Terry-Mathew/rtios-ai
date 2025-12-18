@@ -27,7 +27,6 @@ const DashboardView: React.FC = () => {
         activeResumeId,
         userProfile,
         addResume: handleAddResume,
-        selectResume: handleSelectResume,
         deleteResume: handleDeleteResume,
         updateProfile: setUserProfile,
         syncFromStorage // NEW: Sync function
@@ -43,8 +42,6 @@ const DashboardView: React.FC = () => {
         activeJobId,
         selectJob: handleSelectStrategy,
         deleteJobWithWorkspaceClear: handleDeleteJobWithWorkspaceClear,
-        updateJobOutputs,
-        setActiveJobId
     } = useJobManagement();
 
 

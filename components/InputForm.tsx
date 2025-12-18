@@ -35,7 +35,6 @@ type NewJobMode = 'url' | 'manual';
 const InputForm: React.FC<InputFormProps> = ({
     resumes,
     activeResumeId,
-    userProfile,
     jobs,
     activeJobId,
     onAddJob,
