@@ -1,10 +1,21 @@
 import { createBrowserRouter } from 'react-router-dom';
-import LandingPage from '../../components/LandingPage';
-import PricingPage from '../../components/PricingPage';
-import DashboardView from './DashboardView';
-import LegalPages from '../../components/LegalPages';
-import AppView from './AppView';
+import { lazy, Suspense } from 'react';
 import RootLayout from './RootLayout';
+import LoadingFallback from '../components/shared/LoadingFallback';
+
+// Lazy load route components
+const LandingPage = lazy(() => import('../../components/LandingPage'));
+const PricingPage = lazy(() => import('../../components/PricingPage'));
+const DashboardView = lazy(() => import('./DashboardView'));
+const AppView = lazy(() => import('./AppView'));
+const LegalPages = lazy(() => import('../../components/LegalPages'));
+
+// Helper to wrap components in Suspense
+const withSuspense = (Component: React.ComponentType<any>, props = {}) => (
+    <Suspense fallback={<LoadingFallback />}>
+        <Component {...props} />
+    </Suspense>
+);
 
 export const router = createBrowserRouter([
     {
@@ -12,35 +23,35 @@ export const router = createBrowserRouter([
         children: [
             {
                 path: '/',
-                element: <LandingPage />,
+                element: withSuspense(LandingPage),
             },
             {
                 path: '/pricing',
-                element: <PricingPage />,
+                element: withSuspense(PricingPage),
             },
             {
                 path: '/app',
-                element: <AppView />,
+                element: withSuspense(AppView),
             },
             {
                 path: '/dashboard',
-                element: <DashboardView />,
+                element: withSuspense(DashboardView),
             },
             {
                 path: '/terms',
-                element: <LegalPages view="terms" />,
+                element: withSuspense(LegalPages, { view: "terms" }),
             },
             {
                 path: '/privacy',
-                element: <LegalPages view="privacy" />,
+                element: withSuspense(LegalPages, { view: "privacy" }),
             },
             {
                 path: '/cookie',
-                element: <LegalPages view="cookie" />,
+                element: withSuspense(LegalPages, { view: "cookie" }),
             },
             {
                 path: '/about',
-                element: <LegalPages view="about" />,
+                element: withSuspense(LegalPages, { view: "about" }),
             },
         ],
     },

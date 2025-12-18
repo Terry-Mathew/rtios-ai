@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useAppStore } from '../../stores/appStore';
 import InputForm from '../../../components/InputForm';
-import ResumeAnalysisDisplay from '../../../components/ResumeAnalysisDisplay';
 import CompanyResearchDisplay from '../../../components/CompanyResearchDisplay';
 import { useShallow } from 'zustand/react/shallow';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import type { SavedResume, UserProfile, JobInfo, AppStatus } from '../../../types';
+import LoadingFallback from '../../components/shared/LoadingFallback';
+
+// Lazy load heavy chart component
+const ResumeAnalysisDisplay = lazy(() => import('../../../components/ResumeAnalysisDisplay'));
 
 interface RightSidebarProps {
     // Resume/Profile data
@@ -112,7 +115,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     />
                 </div>
                 <div className={`h-full ${activeSidebarTab === 'analysis' ? 'block' : 'hidden'}`}>
-                    <ResumeAnalysisDisplay analysis={analysis} />
+                    <Suspense fallback={<LoadingFallback />}>
+                        <ResumeAnalysisDisplay analysis={analysis} />
+                    </Suspense>
                 </div>
                 <div className={`h-full ${activeSidebarTab === 'research' ? 'block' : 'hidden'}`}>
                     <CompanyResearchDisplay research={research} />
