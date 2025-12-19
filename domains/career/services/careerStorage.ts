@@ -87,4 +87,3 @@ export function saveCareerData(resumes: SavedResume[], userProfile: UserProfile)
     console.warn("CareerStorage: Failed to save to storage (Quota might be exceeded).", err);
   }
 }
-

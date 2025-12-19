@@ -9,7 +9,7 @@
 
 import type { JobInfo } from '../types';
 import type { SavedResume, UserProfile } from '../../career/types';
-import { parseStoredJobInfo } from '../../../src/types/storage';
+import { parseStoredJobInfo, parseStoredResume } from '../../../src/types/storage';
 
 const STORAGE_KEY = 'rtios_local_data_v1';
 
@@ -64,16 +64,40 @@ export function saveJobsData(jobs: JobInfo[]): void {
   try {
     // Load existing data to preserve career data
     const existing = localStorage.getItem(STORAGE_KEY);
-    const existingData: StorageData = existing ? JSON.parse(existing) as StorageData : { 
-      resumes: [], 
-      jobs: [], 
-      userProfile: { activeResumeId: null } 
-    };
+    let existingResumes: SavedResume[] = [];
+    let existingUserProfile: UserProfile = { activeResumeId: null, portfolioUrl: '', linkedinUrl: '' };
+    
+    if (existing) {
+      // Parse as unknown first (same pattern as load functions)
+      const data = JSON.parse(existing) as unknown;
+      
+      // Validate structure
+      if (typeof data === 'object' && data !== null) {
+        const storageData = data as Record<string, unknown>;
+        
+        // Safely extract and validate resumes array
+        const resumesArray = Array.isArray(storageData.resumes) ? storageData.resumes : [];
+        existingResumes = resumesArray
+          .map(r => parseStoredResume(r))
+          .filter((r): r is SavedResume => r !== null);
+        
+        // Safely extract userProfile
+        if (typeof storageData.userProfile === 'object' && storageData.userProfile !== null) {
+          const profile = storageData.userProfile as Partial<UserProfile>;
+          existingUserProfile = {
+            activeResumeId: null,
+            portfolioUrl: '',
+            linkedinUrl: '',
+            ...profile
+          };
+        }
+      }
+    }
 
     const data: StorageData = {
-      resumes: existingData.resumes || [],
+      resumes: existingResumes,
       jobs,
-      userProfile: existingData.userProfile || { activeResumeId: null }
+      userProfile: existingUserProfile
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
