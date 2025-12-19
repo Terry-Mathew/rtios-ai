@@ -86,8 +86,8 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
             setResumeText(text); // Update workspace store with text
 
             useToastStore.getState().addToast({ type: 'success', message: 'Resume uploaded and parsed successfully' });
-        } catch (e) {
-            const message = errorService.handleError(e as Error, {
+        } catch (e: unknown) {
+            const message = errorService.handleError(e, {
                 component: 'useResumeManagement',
                 action: 'addResume',
                 fileName: file.name
@@ -105,8 +105,8 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
     const selectResume = useCallback((id: string) => {
         try {
             handleSelectResume(id);
-        } catch (error) {
-            const message = errorService.handleError(error as Error, {
+        } catch (error: unknown) {
+            const message = errorService.handleError(error, {
                 component: 'useResumeManagement',
                 action: 'selectResume',
                 resumeId: id
@@ -122,8 +122,8 @@ export const useResumeManagement = (): UseResumeManagementReturn => {
         try {
             handleDeleteResume(id);
             useToastStore.getState().addToast({ type: 'success', message: 'Resume deleted' });
-        } catch (error) {
-            const message = errorService.handleError(error as Error, {
+        } catch (error: unknown) {
+            const message = errorService.handleError(error, {
                 component: 'useResumeManagement',
                 action: 'deleteResume',
                 resumeId: id

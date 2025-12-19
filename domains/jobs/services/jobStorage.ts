@@ -3,10 +3,13 @@
  * 
  * Handles persistence for jobs.
  * Uses shared storage key for backward compatibility.
+ * 
+ * Migration: Uses unknown-first parsing with type guards and supports legacy data (no version field)
  */
 
 import type { JobInfo } from '../types';
 import type { SavedResume, UserProfile } from '../../career/types';
+import { parseStoredJobInfo } from '../../../src/types/storage';
 
 const STORAGE_KEY = 'rtios_local_data_v1';
 
@@ -24,18 +27,31 @@ export function loadJobsData(): JobInfo[] {
     const dataStr = localStorage.getItem(STORAGE_KEY);
     if (!dataStr) return [];
 
-    const data = JSON.parse(dataStr) as StorageData;
+    // Parse as unknown first
+    const data = JSON.parse(dataStr) as unknown;
+    
+    // Validate structure
+    if (typeof data !== 'object' || data === null) {
+      console.warn("JobStorage: Invalid storage data format.");
+      return [];
+    }
+    
+    const storageData = data as Record<string, unknown>;
 
-    // Revive Date objects and ensure outputs structure exists
-    const jobs = data.jobs?.map((j: any) => ({
-      ...j,
-      dateAdded: j.dateAdded ? new Date(j.dateAdded) : new Date(),
-      outputs: j.outputs || {}
-    })) || [];
+    // Parse jobs with type-safe migration (handles legacy + versioned data)
+    const jobsArray = Array.isArray(storageData.jobs) ? storageData.jobs : [];
+    const jobs = jobsArray
+      .map(j => parseStoredJobInfo(j))
+      .filter((j): j is JobInfo => j !== null)
+      .map(j => ({
+        ...j,
+        // Ensure outputs structure exists
+        outputs: j.outputs || {}
+      }));
 
     return jobs;
-  } catch (error) {
-    console.error("JobStorage: Failed to load from storage.", error);
+  } catch (err: unknown) {
+    console.error("JobStorage: Failed to load from storage.", err);
     return [];
   }
 }
@@ -48,7 +64,7 @@ export function saveJobsData(jobs: JobInfo[]): void {
   try {
     // Load existing data to preserve career data
     const existing = localStorage.getItem(STORAGE_KEY);
-    const existingData: StorageData = existing ? JSON.parse(existing) : { 
+    const existingData: StorageData = existing ? JSON.parse(existing) as StorageData : { 
       resumes: [], 
       jobs: [], 
       userProfile: { activeResumeId: null } 
@@ -61,8 +77,8 @@ export function saveJobsData(jobs: JobInfo[]): void {
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.warn("JobStorage: Failed to save to storage (Quota might be exceeded).", error);
+  } catch (err: unknown) {
+    console.warn("JobStorage: Failed to save to storage (Quota might be exceeded).", err);
   }
 }
 

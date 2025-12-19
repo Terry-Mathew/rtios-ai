@@ -35,8 +35,8 @@ const DEFAULT_PROFILE: UserProfile = {
     linkedinUrl: ''
 };
 
-// Create the context
-const CareerContext = createContext<CareerContextValue | null>(null);
+// Create the context (exported for use by careerHooks.ts)
+export const CareerContext = createContext<CareerContextValue | null>(null);
 
 // Provider component
 export const CareerContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -133,11 +133,4 @@ export const CareerContextProvider: React.FC<{ children: React.ReactNode }> = ({
     return <CareerContext.Provider value={value}>{children}</CareerContext.Provider>;
 };
 
-// Hook to use the context
-export const useCareerContext = (): CareerContextValue => {
-    const context = useContext(CareerContext);
-    if (!context) {
-        throw new Error('useCareerContext must be used within CareerContextProvider');
-    }
-    return context;
-};
+// Note: useCareerContext hook moved to careerHooks.ts to satisfy react-refresh/only-export-components

@@ -35,7 +35,7 @@ interface UseJobManagementReturn {
     addNewJobStrategy: () => void;
 
     // Low-level operations
-    updateJobOutputs: (jobId: string, outputs: any) => void;
+    updateJobOutputs: (jobId: string, outputs: import('../../domains/jobs/types').JobOutputsUpdate) => void;
     setActiveJobId: (id: string | null) => void;
     setJobs: React.Dispatch<React.SetStateAction<JobInfo[]>>;
 }
@@ -104,8 +104,8 @@ export const useJobManagement = (): UseJobManagementReturn => {
             clearWorkspaceStore(appState.linkedIn.input);
             setStatus(AppStatus.IDLE);
             useToastStore.getState().addToast({ type: 'success', message: 'Job added successfully' });
-        } catch (error) {
-            const message = errorService.handleError(error as Error, {
+        } catch (error: unknown) {
+            const message = errorService.handleError(error, {
                 component: 'useJobManagement',
                 action: 'addJob',
                 jobTitle: job.title
@@ -158,8 +158,8 @@ export const useJobManagement = (): UseJobManagementReturn => {
         try {
             handleDeleteJob(jobId);
             useToastStore.getState().addToast({ type: 'success', message: 'Job deleted' });
-        } catch (error) {
-            const message = errorService.handleError(error as Error, {
+        } catch (error: unknown) {
+            const message = errorService.handleError(error, {
                 component: 'useJobManagement',
                 action: 'deleteJob',
                 jobId
@@ -177,8 +177,8 @@ export const useJobManagement = (): UseJobManagementReturn => {
                 clearWorkspaceStore(appState.linkedIn.input);
             }
             useToastStore.getState().addToast({ type: 'success', message: 'Job deleted' });
-        } catch (error) {
-            const message = errorService.handleError(error as Error, {
+        } catch (error: unknown) {
+            const message = errorService.handleError(error, {
                 component: 'useJobManagement',
                 action: 'deleteJobWithWorkspaceClear',
                 jobId

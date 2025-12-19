@@ -11,7 +11,7 @@ interface CoverLetterFeatureProps {
     currentJob: JobInfo;
     userProfile: UserProfile;
     activeJobId: string | null;
-    onUpdateJobOutputs: (jobId: string, updates: any) => void;
+    onUpdateJobOutputs: (jobId: string, updates: import('../../domains/jobs/types').JobOutputsUpdate) => void;
 }
 
 export const CoverLetterFeature: React.FC<CoverLetterFeatureProps> = ({

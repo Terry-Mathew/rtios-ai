@@ -11,9 +11,9 @@ const AppView = lazy(() => import('./AppView'));
 const LegalPages = lazy(() => import('../pages/LegalPages'));
 
 // Helper to wrap components in Suspense
-const withSuspense = (Component: React.ComponentType<any>, props = {}) => (
+const withSuspense = <P extends object>(Component: React.ComponentType<P>, props?: P) => (
     <Suspense fallback={<LoadingFallback />}>
-        <Component {...props} />
+        <Component {...(props || {} as P)} />
     </Suspense>
 );
 

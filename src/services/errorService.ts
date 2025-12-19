@@ -4,12 +4,12 @@ export interface ErrorContext {
     userId?: string;
     jobId?: string;
     resumeId?: string;
-    [key: string]: any;
+    [key: string]: unknown; // Changed from any to unknown for type safety
 }
 
 export interface ErrorServiceReturn {
-    logError: (error: Error, context?: ErrorContext) => void;
-    handleError: (error: Error, context?: ErrorContext) => string;
+    logError: (error: unknown, context?: ErrorContext) => void;
+    handleError: (error: unknown, context?: ErrorContext) => string;
     isNetworkError: (error: Error) => boolean;
     isAuthError: (error: Error) => boolean;
     isValidationError: (error: Error) => boolean;
@@ -17,19 +17,22 @@ export interface ErrorServiceReturn {
 
 class ErrorService implements ErrorServiceReturn {
     // Log error to console or external service
-    logError(error: Error, context?: ErrorContext) {
+    logError(error: unknown, context?: ErrorContext) {
+        // Normalize unknown to Error for consistent logging
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
+        
         const timestamp = new Date().toISOString();
         const errorLog = {
-            message: error.message,
-            stack: error.stack,
+            message: normalizedError.message,
+            stack: normalizedError.stack,
             context,
             timestamp,
             userAgent: navigator.userAgent,
         };
 
         if (import.meta.env.DEV) {
-            console.groupCollapsed(`[ErrorService] ${error.message}`);
-            console.error(error);
+            console.groupCollapsed(`[ErrorService] ${normalizedError.message}`);
+            console.error(normalizedError);
             console.info('Context:', context);
             console.groupEnd();
         } else {
@@ -41,27 +44,30 @@ class ErrorService implements ErrorServiceReturn {
     }
 
     // Handle error and return user-friendly message
-    handleError(error: Error, context?: ErrorContext): string {
+    handleError(error: unknown, context?: ErrorContext): string {
         this.logError(error, context);
 
-        if (this.isNetworkError(error)) {
+        // Normalize to Error for type checking
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
+
+        if (this.isNetworkError(normalizedError)) {
             return "Connection issue. Please check your internet and try again.";
         }
 
-        if (this.isAuthError(error)) {
+        if (this.isAuthError(normalizedError)) {
             return "Your session has expired. Please log in again.";
         }
 
-        if (this.isValidationError(error)) {
+        if (this.isValidationError(normalizedError)) {
             // Often validation errors might have specific messages we want to show
-            return error.message || "Please check your input and try again.";
+            return normalizedError.message || "Please check your input and try again.";
         }
 
-        if (this.isAIError(error)) {
+        if (this.isAIError(normalizedError)) {
             return "AI service temporarily unavailable. Please try again in a moment.";
         }
 
-        if (this.isFileUploadError(error)) {
+        if (this.isFileUploadError(normalizedError)) {
             return "Could not read file. Please ensure it's a valid format.";
         }
 

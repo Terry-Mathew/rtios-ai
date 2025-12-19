@@ -111,7 +111,7 @@ const InterviewQuestionCard: React.FC<{ question: InterviewQuestion; index: numb
                     </div>
 
                     <div className="font-tiempos text-base text-text-primary italic leading-relaxed relative z-10">
-                        "{question.sampleAnswer}"
+                        {`"${question.sampleAnswer}"`}
                     </div>
 
                     {question.sampleAnswerType === 'hypothetical' && (

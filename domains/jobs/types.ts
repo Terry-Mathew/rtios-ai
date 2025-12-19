@@ -29,3 +29,11 @@ export interface JobInfo {
   outputs?: JobOutputs; // Persisted generation history
 }
 
+/**
+ * Type for job output updates (used by UI layer for partial updates)
+ * Omits 'id' to prevent accidental ID updates, adds updatedAt tracking
+ */
+export type JobOutputsUpdate = Partial<Omit<JobOutputs, 'id'>> & {
+  updatedAt?: Date;
+};
+

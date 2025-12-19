@@ -1,8 +1,9 @@
 /**
  * useCareerContext Hook
  * 
- * Re-exports the hook from CareerContextProvider for backward compatibility.
+ * Re-exports the hook from careerHooks for backward compatibility.
  * All components can continue using this import path.
  */
 
-export { useCareerContext, type CareerContextValue as UseCareerContextReturn } from '../CareerContextProvider';
+export { useCareerContext } from '../careerHooks';
+export type { CareerContextValue as UseCareerContextReturn } from '../CareerContextProvider';

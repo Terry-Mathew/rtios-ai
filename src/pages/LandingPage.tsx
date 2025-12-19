@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { ArrowRight, FileText, BarChart2, Brain, Target, Search, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import Footer from '../../shared/layout/Footer';
+import Footer from '../components/layout/Footer';
 import { useAppStore } from '../stores/appStore';
 
 const LandingPage: React.FC = () => {
@@ -70,7 +70,7 @@ const LandingPage: React.FC = () => {
                             </div>
                             <h3 className="font-tiempos text-xl font-bold mb-3">The Bland Letter</h3>
                             <p className="font-interstate text-sm text-text-secondary leading-relaxed">
-                                Your resume is exceptional. Your cover letter shouldn't sound like everyone else's. Stop guessing what they want to hear.
+                                {`Your resume is exceptional. Your cover letter shouldn't sound like everyone else's. Stop guessing what they want to hear.`}
                             </p>
                         </div>
                         {/* Card 2 */}
@@ -113,7 +113,7 @@ const LandingPage: React.FC = () => {
                         </div>
                         <h2 className="font-tiempos text-3xl md:text-4xl font-bold mb-6">Craft Your Signature.</h2>
                         <p className="font-interstate text-sm text-text-secondary leading-relaxed mb-8">
-                            Every word, tailored. Our AI synthesizes your resume, the company's ethos, and the role's demands to write cover letters that resonate. Choose your tone, refine in real-time.
+                            {`Every word, tailored. Our AI synthesizes your resume, the company's ethos, and the role's demands to write cover letters that resonate. Choose your tone, refine in real-time.`}
                         </p>
                         <ul className="space-y-3 mb-8">
                             <li className="flex items-center gap-3 font-interstate text-xs text-text-primary">

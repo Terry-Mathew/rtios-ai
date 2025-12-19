@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { View } from '../../types';
 import { ArrowLeft } from 'lucide-react';
-import Footer from '../../shared/layout/Footer';
+import Footer from '../components/layout/Footer';
 
 interface LegalPageProps {
     view: View;
@@ -31,10 +31,10 @@ const LegalPages: React.FC<LegalPageProps> = ({ view }) => {
                         <p>Welcome to Rtios AI. By accessing or using our website and services, you agree to be bound by these Terms of Service.</p>
 
                         <h3 className="font-tiempos text-xl text-text-primary pt-4">1. Services Provided</h3>
-                        <p>Rtios AI provides AI-powered career document analysis and generation services. We offer different tiers of service, including "Pulse," "Context," and "Executive," each with specific usage limits defined in our Pricing policy.</p>
+                        <p>{`Rtios AI provides AI-powered career document analysis and generation services. We offer different tiers of service, including "Pulse," "Context," and "Executive," each with specific usage limits defined in our Pricing policy.`}</p>
 
                         <h3 className="font-tiempos text-xl text-text-primary pt-4">2. Usage Limits</h3>
-                        <p>Users are subject to the specific "Analysis Uses" limit of their subscribed tier. An "Analysis Use" is defined as a single submission of a resume and job description pair for processing.</p>
+                        <p>{`Users are subject to the specific "Analysis Uses" limit of their subscribed tier. An "Analysis Use" is defined as a single submission of a resume and job description pair for processing.`}</p>
 
                         <h3 className="font-tiempos text-xl text-text-primary pt-4">3. Content Ownership</h3>
                         <p>You retain all rights to the resumes and personal data you upload. Rtios AI claims no ownership over your generated content (cover letters, messages). You are granted a worldwide, royalty-free license to use the generated content for your personal career advancement.</p>
@@ -81,9 +81,9 @@ const LegalPages: React.FC<LegalPageProps> = ({ view }) => {
             case 'about':
                 return (
                     <div className="space-y-6 text-sm text-text-secondary font-sans leading-relaxed">
-                        <p className="font-tiempos text-2xl text-text-primary italic">"Strategy over automation."</p>
+                        <p className="font-tiempos text-2xl text-text-primary italic">{`"Strategy over automation."`}</p>
                         <p>Rtios AI was born from a frustration with generic, robotic career tools. We believe the job application process is a strategic campaign, not a numbers game.</p>
-                        <p>Our mission is to arm candidates with deep, contextual intelligence that highlights their true value. We don't just write words; we align narratives.</p>
+                        <p>{`Our mission is to arm candidates with deep, contextual intelligence that highlights their true value. We don't just write words; we align narratives.`}</p>
                         <p>Founded in 2025, Rtios AI operates at the intersection of advanced LLM technology and human-centric career strategy.</p>
                     </div>
                 );

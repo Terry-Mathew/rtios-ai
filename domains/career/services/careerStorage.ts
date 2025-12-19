@@ -3,10 +3,13 @@
  * 
  * Handles persistence for resumes and user profile.
  * Uses shared storage key for backward compatibility.
+ * 
+ * Migration: Uses unknown-first parsing with type guards and supports legacy data (no version field)
  */
 
 import type { SavedResume, UserProfile } from '../types';
 import type { JobInfo } from '../../jobs/types';
+import { parseStoredResume } from '../../../src/types/storage';
 
 const STORAGE_KEY = 'rtios_local_data_v1';
 
@@ -24,23 +27,35 @@ export function loadCareerData(): { resumes: SavedResume[]; userProfile: UserPro
     const dataStr = localStorage.getItem(STORAGE_KEY);
     if (!dataStr) return null;
 
-    const data = JSON.parse(dataStr) as StorageData;
+    // Parse as unknown first
+    const data = JSON.parse(dataStr) as unknown;
+    
+    // Validate structure
+    if (typeof data !== 'object' || data === null) {
+      console.warn("CareerStorage: Invalid storage data format.");
+      return null;
+    }
+    
+    const storageData = data as Record<string, unknown>;
 
-    // Revive Date objects from ISO strings
-    const resumes = data.resumes?.map((r: any) => ({
-      ...r,
-      uploadDate: new Date(r.uploadDate)
-    })) || [];
+    // Parse resumes with type-safe migration (handles legacy + versioned data)
+    const resumesArray = Array.isArray(storageData.resumes) ? storageData.resumes : [];
+    const resumes = resumesArray
+      .map(r => parseStoredResume(r))
+      .filter((r): r is SavedResume => r !== null);
 
-    const userProfile = data.userProfile || {
+    const userProfile: UserProfile = {
       activeResumeId: null,
       portfolioUrl: '',
-      linkedinUrl: ''
+      linkedinUrl: '',
+      ...(typeof storageData.userProfile === 'object' && storageData.userProfile !== null 
+        ? (storageData.userProfile as Partial<UserProfile>) 
+        : {})
     };
 
     return { resumes, userProfile };
-  } catch (error) {
-    console.error("CareerStorage: Failed to load from storage.", error);
+  } catch (err: unknown) {
+    console.error("CareerStorage: Failed to load from storage.", err);
     return null;
   }
 }
@@ -53,11 +68,11 @@ export function saveCareerData(resumes: SavedResume[], userProfile: UserProfile)
   try {
     // Load existing data to preserve jobs
     const existing = localStorage.getItem(STORAGE_KEY);
-    const existingData: StorageData = existing ? JSON.parse(existing) : { resumes: [], jobs: [], userProfile: {} };
+    const existingData: StorageData = existing ? JSON.parse(existing) as StorageData : { resumes: [], jobs: [], userProfile: {} };
 
     // Strip File objects to prevent circular refs, quota issues, and serialization errors
     const serializableResumes = resumes.map(r => {
-      const { file, ...rest } = r;
+      const { file: _file, ...rest } = r; // Unused: prefix with _ to fix lint
       return rest;
     });
 
@@ -68,8 +83,8 @@ export function saveCareerData(resumes: SavedResume[], userProfile: UserProfile)
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.warn("CareerStorage: Failed to save to storage (Quota might be exceeded).", error);
+  } catch (err: unknown) {
+    console.warn("CareerStorage: Failed to save to storage (Quota might be exceeded).", err);
   }
 }
 

@@ -9,7 +9,7 @@ interface InterviewPrepFeatureProps {
     currentResume: SavedResume | null;
     currentJob: JobInfo;
     activeJobId: string | null;
-    onUpdateJobOutputs: (jobId: string, updates: any) => void;
+    onUpdateJobOutputs: (jobId: string, updates: import('../../domains/jobs/types').JobOutputsUpdate) => void;
 }
 
 export const InterviewPrepFeature: React.FC<InterviewPrepFeatureProps> = ({

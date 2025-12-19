@@ -17,6 +17,7 @@ import type {
   LinkedInMessageInput, 
   InterviewQuestion 
 } from '../types';
+import { extractWebSources } from '../../../src/types/gemini';
 
 const apiKey = process.env.API_KEY;
 
@@ -46,8 +47,8 @@ export const extractResumeText = async (fileBase64: string, mimeType: string = '
       }
     });
     return response.text || "";
-  } catch (error) {
-    console.error("Error parsing resume:", error);
+  } catch (err: unknown) {
+    console.error("Error parsing resume:", err);
     throw new Error("Failed to extract text from resume.");
   }
 };
@@ -72,11 +73,9 @@ export const researchCompany = async (companyName: string, companyUrl?: string):
       }
     });
 
-    // Extract grounding metadata for sources
+    // Extract grounding metadata for sources (type-safe)
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const sources = groundingChunks
-      .map((chunk: any) => chunk.web ? { title: chunk.web.title, uri: chunk.web.uri } : null)
-      .filter((source: any) => source !== null) as Array<{ title: string; uri: string }>;
+    const sources = extractWebSources(Array.isArray(groundingChunks) ? groundingChunks : []);
 
     // Remove duplicates
     const uniqueSources = sources.filter((v, i, a) => a.findIndex(t => (t.uri === v.uri)) === i);
@@ -85,8 +84,8 @@ export const researchCompany = async (companyName: string, companyUrl?: string):
       summary: response.text || "No research data available.",
       sources: uniqueSources
     };
-  } catch (error) {
-    console.error("Error researching company:", error);
+  } catch (err: unknown) {
+    console.error("Error researching company:", err);
     return { summary: "Could not complete company research due to an error.", sources: [] };
   }
 };
@@ -140,8 +139,8 @@ export const analyzeResume = async (
     if (!jsonText) throw new Error("Empty analysis response");
     
     return JSON.parse(jsonText) as AnalysisResult;
-  } catch (error) {
-    console.error("Error analyzing resume:", error);
+  } catch (err: unknown) {
+    console.error("Error analyzing resume:", err);
     return {
       score: 0,
       missingKeywords: [],
@@ -243,8 +242,8 @@ export const generateCoverLetter = async (
     });
 
     return response.text || "Failed to generate cover letter.";
-  } catch (error) {
-    console.error("Error generating cover letter:", error);
+  } catch (err: unknown) {
+    console.error("Error generating cover letter:", err);
     throw new Error("Failed to generate cover letter.");
   }
 };
@@ -336,8 +335,8 @@ export const generateLinkedInMessage = async (
     });
 
     return response.text || "Failed to generate LinkedIn message.";
-  } catch (error) {
-    console.error("Error generating LinkedIn message:", error);
+  } catch (err: unknown) {
+    console.error("Error generating LinkedIn message:", err);
     throw new Error("Failed to generate LinkedIn message.");
   }
 };
@@ -431,8 +430,8 @@ export const generateInterviewQuestions = async (
     if (!jsonText) throw new Error("Empty interview prep response");
 
     return JSON.parse(jsonText) as InterviewQuestion[];
-  } catch (error) {
-    console.error("Error generating interview questions:", error);
+  } catch (err: unknown) {
+    console.error("Error generating interview questions:", err);
     throw new Error("Failed to generate interview questions.");
   }
 };
@@ -476,8 +475,8 @@ export const extractJobFromUrl = async (url: string): Promise<JobInfo> => {
 
         return JSON.parse(jsonText) as JobInfo;
 
-    } catch (error) {
-        console.error("Error extracting job from URL:", error);
+    } catch (err: unknown) {
+        console.error("Error extracting job from URL:", err);
         throw new Error("Could not automatically extract job details. Please paste them manually.");
     }
 };

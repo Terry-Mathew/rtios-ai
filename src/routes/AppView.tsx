@@ -152,7 +152,7 @@ const AppView: React.FC = () => {
 
             setActiveSidebarTab('analysis');
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             const message = errorService.handleError(e, {
                 component: 'AppView',
                 action: 'handleGenerate',
