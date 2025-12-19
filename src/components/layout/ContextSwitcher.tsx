@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { JobInfo, SavedResume } from '../../../types';
-import { ChevronDown, Plus, Check } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 
 interface ContextSwitcherProps {
     jobs: JobInfo[];
@@ -9,7 +9,6 @@ interface ContextSwitcherProps {
     resumes: SavedResume[];
     activeResumeId: string | null;
     onSelectStrategy: (jobId: string) => void;
-    onAddNew: () => void;
 }
 
 const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
@@ -17,7 +16,6 @@ const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     activeJobId,
     resumes,
     onSelectStrategy,
-    onAddNew
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -89,21 +87,12 @@ const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                                     </button>
                                 ))}
                                 {jobs.length === 0 && (
-                                    <div className="p-4 text-center text-text-secondary font-interstate text-xs">
-                                        No applications started.
+                                    <div className="p-4 text-center font-interstate text-xs">
+                                        <p className="text-text-secondary mb-2">No applications yet.</p>
+                                        <p className="text-accent">Open Workspace → to add one</p>
                                     </div>
                                 )}
                             </div>
-
-                            <button
-                                onClick={() => {
-                                    onAddNew();
-                                    setIsOpen(false);
-                                }}
-                                className="w-full p-3 bg-surface-base text-accent hover:bg-white/5 transition-colors font-interstate text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 border-t border-white/5"
-                            >
-                                <Plus className="w-3 h-3" /> New Application
-                            </button>
                         </div>
                     )}
                 </div>

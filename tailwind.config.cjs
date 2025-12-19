@@ -14,11 +14,20 @@ module.exports = {
       colors: {
         'surface-base': '#121212',
         'surface-elevated': '#1A1A1A',
+        'surface-overlay': '#242424',
         'text-primary': '#F0F0F0',
-        'text-secondary': '#A3A3A3',
+        'text-secondary': '#B8B8B8', // Increased from #A3A3A3 for WCAG AA (7.2:1 contrast)
+        'text-tertiary': '#888888',
+        'text-placeholder': '#9A9A9A', // For input placeholders (5.3:1 contrast)
         'accent': '#00FF7F',
         'accent-hover': '#00CC66',
+        'accent-muted': 'rgba(0, 255, 127, 0.1)',
         'alert-gap': '#FF6B6B',
+        'alert-warning': '#FFB347',
+        'alert-success': '#4ADE80',
+        'border-subtle': 'rgba(255, 255, 255, 0.05)',
+        'border-default': 'rgba(255, 255, 255, 0.1)',
+        'border-focus': '#00FF7F',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

@@ -17,6 +17,7 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
   canGenerate
 }) => {
   const [copied, setCopied] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const { input, generatedMessage, isGenerating } = linkedInState;
 
   const handleInputChange = (field: keyof LinkedInMessageInput, value: string) => {
@@ -137,45 +138,62 @@ const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> = ({
           </div>
         </div>
 
-        {/* 4. Tone Calibration - Single Choice Radio Buttons */}
+        {/* Advanced Options - Collapsible Section */}
         <div className="mb-6">
-          <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-3">
-            Tone Calibration
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {['WARM PROFESSIONAL', 'PROFESSIONAL', 'CASUAL CONFIDENT', 'INDUSTRY-SPECIFIC'].map((tone) => (
-              <button
-                key={tone}
-                onClick={() => handleInputChange('tone', tone)}
-                className={`
-                  py-2 px-4 rounded-md text-[10px] font-interstate font-bold uppercase tracking-wide transition-all duration-200 ease-in-out
-                  ${input.tone === tone
-                    ? 'bg-accent/70 text-white shadow-lg scale-105 border-2 border-accent/60'
-                    : 'bg-surface-elevated border-2 border-border-base text-text-secondary hover:border-accent/50 hover:text-text-primary hover:scale-102'
-                  }
-                `}
-              >
-                {tone}
-              </button>
-            ))}
-          </div>
-        </div>
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex items-center justify-between w-full py-3 text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest hover:text-text-primary transition-colors"
+          >
+            <span>Advanced Options</span>
+            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`} />
+          </button>
 
-        {/* Missing Context - Text Area */}
-        <div className="mb-6">
-          <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-2">
-            Missing Context
-          </label>
-          <textarea
-            value={input.missingContext || ''}
-            onChange={(e) => handleInputChange('missingContext', e.target.value)}
-            placeholder="Add any additional context or details not covered above..."
-            rows={3}
-            className="w-full px-4 py-3 bg-surface-elevated border-2 border-border-base rounded-md
-               text-sm text-text-primary placeholder-text-secondary/50
-               focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20
-               transition-all duration-200 resize-none"
-          />
+          {showAdvanced && (
+            <div className="space-y-6 pt-4 animate-fade-in-up">
+              {/* Tone Calibration */}
+              <div>
+                <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-3">
+                  Tone Calibration
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {['WARM PROFESSIONAL', 'PROFESSIONAL', 'CASUAL CONFIDENT', 'INDUSTRY-SPECIFIC'].map((tone) => (
+                    <button
+                      key={tone}
+                      type="button"
+                      onClick={() => handleInputChange('tone', tone)}
+                      className={`
+                        py-2 px-4 rounded-md text-[10px] font-interstate font-bold uppercase tracking-wide transition-all duration-200 ease-in-out
+                        ${input.tone === tone
+                          ? 'bg-accent/70 text-white shadow-lg scale-105 border-2 border-accent/60'
+                          : 'bg-surface-elevated border-2 border-border-base text-text-secondary hover:border-accent/50 hover:text-text-primary hover:scale-102'
+                        }
+                      `}
+                    >
+                      {tone}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Missing Context */}
+              <div>
+                <label className="block text-[10px] font-interstate font-bold text-text-secondary uppercase tracking-widest mb-2">
+                  Additional Context
+                </label>
+                <textarea
+                  value={input.missingContext || ''}
+                  onChange={(e) => handleInputChange('missingContext', e.target.value)}
+                  placeholder="Add any additional context or details not covered above..."
+                  rows={3}
+                  className="w-full px-4 py-3 bg-surface-elevated border-2 border-border-base rounded-md
+                     text-sm text-text-primary placeholder-text-secondary/50
+                     focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20
+                     transition-all duration-200 resize-none"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <button

@@ -5,7 +5,7 @@
  * Extracted from App.tsx to support React Router v6 integration.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useAppStore } from '../stores/appStore';
@@ -19,7 +19,7 @@ import ContextSwitcher from '../components/layout/ContextSwitcher';
 import { useResumeManagement } from '../hooks/useResumeManagement';
 import { useJobManagement } from '../hooks/useJobManagement';
 import { AppStatus, ToneType } from '../../types';
-import { Layout } from 'lucide-react';
+import { Layout, Menu } from 'lucide-react';
 import * as GeminiService from '../../domains/intelligence/services/gemini';
 import { ErrorBoundary } from '../components/errors/ErrorBoundary';
 import { FeatureErrorBoundary } from '../components/errors/FeatureErrorBoundary';
@@ -34,6 +34,9 @@ const AppView: React.FC = () => {
     const activeModule = useAppStore((s) => s.activeModule);
     const setActiveSidebarTab = useAppStore((s) => s.setActiveSidebarTab);
     const setCurrentView = useAppStore((s) => s.setCurrentView);
+
+    // --- Mobile Sidebar State ---
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
     // Sync appStore with current route
     useEffect(() => {
@@ -66,7 +69,6 @@ const AppView: React.FC = () => {
         selectJob: handleSelectStrategy,
         deleteJobWithWorkspaceClear: handleDeleteJobWithWorkspaceClear,
         snapshotCurrentJob,
-        addNewJobStrategy,
         updateJobOutputs
     } = useJobManagement();
 
@@ -93,10 +95,7 @@ const AppView: React.FC = () => {
 
     // --- Library Handlers ---
 
-    const handleAddNewStrategy = () => {
-        setActiveSidebarTab('input');
-        addNewJobStrategy();
-    };
+
 
     const handleError = (message: string) => {
         setStatus(AppStatus.ERROR);
@@ -175,7 +174,7 @@ const AppView: React.FC = () => {
                 />
 
                 {/* 2. Main Content Area (Flexible) */}
-                <main className="flex-1 flex flex-col bg-surface-base relative border-r border-white/5 min-w-0 overflow-hidden">
+                <main className="flex-1 flex flex-col bg-surface-base relative border-r border-white/5 min-w-0 overflow-hidden pb-20 lg:pb-0">
                     {/* Global Context Switcher */}
                     <ContextSwitcher
                         jobs={jobs}
@@ -183,7 +182,6 @@ const AppView: React.FC = () => {
                         resumes={resumes}
                         activeResumeId={activeResumeId}
                         onSelectStrategy={handleSelectStrategy}
-                        onAddNew={handleAddNewStrategy}
                     />
 
                     {/* Loading Overlay */}
@@ -265,7 +263,19 @@ const AppView: React.FC = () => {
                     onDeleteJob={handleDeleteJobWithWorkspaceClear}
                     onGenerate={handleGenerate}
                     appStatus={appState.status}
+                    isMobileOpen={isMobileSidebarOpen}
+                    onMobileClose={() => setIsMobileSidebarOpen(false)}
                 />
+
+                {/* Mobile Floating Action Button to open sidebar */}
+                <button
+                    onClick={() => setIsMobileSidebarOpen(true)}
+                    className="lg:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-accent rounded-full shadow-lg flex items-center justify-center hover:bg-accent-hover transition-colors"
+                    aria-label="Open workspace"
+                >
+                    <Menu className="w-6 h-6 text-surface-base" />
+                </button>
+
                 <ToastContainer />
             </div>
         </ErrorBoundary>

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @config "./tailwind.config.cjs";
 
+
 /* Base body styles */
 body {
   font-family: 'Inter', sans-serif;
@@ -25,4 +26,31 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* ====== ACCESSIBILITY STYLES ====== */
+
+/* Global focus ring for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #00FF7F;
+  outline-offset: 2px;
+}
+
+/* Ensure placeholder text is visible */
+::placeholder {
+  color: #9A9A9A;
+  opacity: 1;
+}
+
+/* Minimum touch target size for mobile */
+@media (max-width: 1023px) {
+
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }

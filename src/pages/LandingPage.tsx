@@ -51,7 +51,7 @@ const LandingPage: React.FC = () => {
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                     <p className="mt-4 font-interstate text-[10px] text-text-secondary uppercase tracking-widest opacity-60">
-                        No Account Required • Instant Analysis
+                        Free to Start • AI-Powered Analysis
                     </p>
                 </div>
             </section>
